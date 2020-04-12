@@ -12,7 +12,24 @@ class App extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    // if (this.getHashParams().token) {
+    //   this.getSongs();
+    // }
   }
+
+  getHashParams = () => {
+    var hashParams = {};
+    var e, r = /([^&;=]+)=?([^&;]*)/g,
+    q = window.location.hash.substring(1);
+    //q = window.location.href.substring(window.location.origin.length + 2);
+    console.log("url", window.location.origin, "q: " + q);
+    while ( e = r.exec(q)) {
+      hashParams[e[1]] = decodeURIComponent(e[2]);
+    }
+    console.log("hash params: ", hashParams);
+    return hashParams;
+  }
+
 
   handleChange(event) {
     this.setState({ name: event.target.value });
@@ -23,6 +40,12 @@ class App extends Component {
     fetch(`/api/greeting?name=${encodeURIComponent(this.state.name)}`)
       .then(response => response.json())
       .then(state => this.setState(state));
+  }
+
+  getSongs() {
+    // fetch(`/api/getSongs`)
+    // .then(response => response.json())
+    // .then(jsonresponse => console.log("RECEIVED IN CLIENT:", jsonresponse));
   }
 
   render() {

@@ -28,6 +28,7 @@ var serverName = "localhost";
 var portNumber = 3306;
 var userName = 'root', password = 'Selenaxmimi0314!';
 var db = "spotifyApp";
+var userSpotifyId;
 
 // const rl = readline.createInterface({
 //   input: process.stdin,
@@ -48,27 +49,26 @@ connection.connect((err) => {
 //   console.log('The solution is: ', results);
 // });
 
+const duplicateEntryErrNo = 1062;
+const entryNameTooLongErrNo = 1406;
+const quotationErrNo = 1064;
+
 var spotifyApi = new SpotifyWebApi();
 
-const printSongs = () => {
-  connection.query('SELECT * FROM songs', function (error, results, fields) {
-    if (error) throw error;
-    console.log(results);
-  });
+const getUserSongsFromDatabase = () => {
+  let sql = `CALL get_all_songs(${userSpotifyId})`;
+  return connection.query(sql);
 }
 
 const addUser = (id, name) => {
   let sql = `INSERT INTO users(user_id,user_name) VALUES("${id}","${name}")`;
   connection.query(sql, function (error, results, fields) {
-    if (error) {
+    if (error && error.errno != duplicateEntryErrNo) {
       console.log(error);
     }
   })
 }
 
-const duplicateEntryErrNo = 1062;
-const entryNameTooLongErrNo = 1406;
-const quotationErrNo = 1064;
 const addToDatabase = (song, artist, album, userId) => {
   let addArtistSql = `INSERT INTO artists(artist_id,artist_name) VALUES("${artist.id}",
     "${artist.name}")`;
@@ -83,27 +83,27 @@ const addToDatabase = (song, artist, album, userId) => {
   let addUserSongSql = `INSERT INTO user_songs(song_id,user_id) VALUES("${id}","${userId}")`;
   connection.query(addArtistSql, function (error, results, fields) {
     if (error && error.errno != duplicateEntryErrNo && error.errno != entryNameTooLongErrNo && error.errno != quotationErrNo) {
-      console.log("ERROR ADDING ARTIST ", artist.name);
+      // console.log("ERROR ADDING ARTIST ", artist.name);
       console.log(error);
     }
     else {
       connection.query(addAlbumSql, function (error, results, fields) {
         if (error && error.errno != duplicateEntryErrNo && error.errno != entryNameTooLongErrNo && error.errno != quotationErrNo) {
           console.log("ERROR ADDING ALBUM", album.name);
-          console.log(error);
+          // console.log(error);
         }
         else {
           connection.query(addSongSql, function (error, results, fields) {
             if (error && error.errno != duplicateEntryErrNo && error.errno != entryNameTooLongErrNo 
               && error.errno != quotationErrNo && id != undefined) {
               console.log("ERROR ADDING SONG", song.name);
-              console.log(error);
+              // console.log(error);
             }
             else {
               connection.query(addUserSongSql, function (error, results, fields) {
                 if (error && error.errno != duplicateEntryErrNo && id != undefined) {
                   console.log("ERROR ADDING USER-SONG", song.id, userId);
-                  console.log(error);
+                  // console.log(error);
                 }
                 //connection.query()
               })
@@ -119,6 +119,9 @@ const addToDatabase = (song, artist, album, userId) => {
     // });
     //rl.close();
 }
+
+
+
 const getUserLibraryFromDatabase = () => {
 
 }
@@ -127,9 +130,62 @@ const closeDatabase = () => {
   connection.end();
 }
 
+const addTracks = (offset, userId, getTracksFn) => {
+  getTracksFn({
+    limit: 50,
+    offset: offset
+// After receiving the tracks...
+}).then((tracks) => {
+    //console.log(tracks);
+    var trackIds = [];
+    // For each track...
+    tracks.body.items && tracks.body.items.forEach((track) => {
+        //console.log("TRACK: " + track);
+        // Cache this track
+        //this[track.track.id] = true;
+        // TODO: add artist and album to database if not exist
+        // Save the track id
+        trackIds.push(track.track.id);
+    });
+    //console.log("TRACK IDS: " + trackIds);
+    // Get the audio features and add the new track item to the array of tracks to add to the database
+    spotifyApi.getAudioFeaturesForTracks(trackIds).then((audioFeatures) => {
+        //console.log("AUDIO FEATURES: \n" + audioFeatures);
+        //console.log("songs:");
+        audioFeatures.body.audio_features.forEach((feature, index) => {
+            // add to song table...
+            let song = {
+                ...feature,
+                songName: tracks.body.items[index].track.name,
+                album: tracks.body.items[index].track.album.name
+            }
+            let artist = {
+              id: tracks.body.items[index].track.artists[0].id,
+              name: tracks.body.items[index].track.artists[0].name
+            }
+            let album = {
+              id: tracks.body.items[index].track.album.id,
+              name: tracks.body.items[index].track.album.name
+            }
+            if (song.id != "undefined" && userId && artist.id && album.id) {
+              addToDatabase(song, artist, album, userId);
+            }
+            //console.log(song, artist, album);
+            //console.log("==============UPDATED SONGS IN DB==============");
+            //printSongs();
+            //console.log(song);
+        });
+        if (tracks.body.next) {
+            //console.log("next: " + tracks.body.next + "\nRequesting offset " + offset + 50 + "next");
+            addTracks(offset + 50, userId, getTracksFn);
+        }
+    }).catch((e) => console.log(e))
+}).catch((e) => console.log(e));
+}
+
 const addSavedTracks = (offset, userId) => {
-    console.log("=======================NEW REQUEST===========================");
-    console.log("Retrieving songs at offset " + offset);
+    // console.log("=======================NEW REQUEST===========================");
+    // console.log("Retrieving songs at offset " + offset);
     // spotifyApi.getUserPlaylists().then((r) => {
     //     console.log(r);
     // }).catch((e) => {
@@ -195,6 +251,43 @@ const addSavedTracks = (offset, userId) => {
     }).catch((e) => console.log(e));
 }
 
+
+const addPlaylistHelper = (offset, userId) => {
+  console.log("=======================NEW REQUEST PLAYLIST===========================");
+  console.log("Retrieving playlists at offset " + offset)
+    spotifyApi.getUserPlaylists({
+      limit: 50,
+      offset: 0
+    }).then(playlists => {
+      playlists.body.items.forEach(playlist => {
+        const getPlaylistTracks = spotifyApi.getPlaylistTracks.bind(spotifyApi);
+        const fn = (obj) => {
+          return getPlaylistTracks(playlist.id, obj);
+        }
+        addTracks(0, userId, fn);
+      })
+      if (playlists.body.next) {
+        addPlaylistHelper(offset + 50, userId);
+      }
+    })
+  }
+
+const getUserId = async () => {
+  return spotifyApi.getMe().then(({body}) => {
+    console.log("USER:", body, body.id)
+    userSpotifyId = body.id;
+    addUser(body.id, body.display_name);
+    return body.id;
+  })
+}
+
+  
+  
+const addUserPlaylistsToDatabase = async () => {
+  let id = await getUserId();
+  addPlaylistHelper(0, id);
+}
+
 const addUserLibraryToDatabase = () => {
     // let history = {
     //     addToHistory(id) {
@@ -203,8 +296,9 @@ const addUserLibraryToDatabase = () => {
         // TODO: add artists, albums, and songs-to-user to database
     spotifyApi.getMe().then(({body}) => {
       console.log("USER:", body, body.id)
+      userSpotifyId = body.id;
       addUser(body.id, body.display_name);
-      addSavedTracks(0, body.id);
+      addTracks(0, body.id, spotifyApi.getMySavedTracks.bind(spotifyApi));
     }).catch((err) => {
       throw err;
     })
@@ -236,6 +330,11 @@ app.get('/api/greeting', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify({ greeting: `Hello ${name}!` }));
 });
+
+app.get('/api/getSongs', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify({ songs: getUserSongsFromDatabase() }))
+})
 
 
 
@@ -326,6 +425,10 @@ app.get('/callback', function(req, res) {
 
         spotifyApi.setAccessToken(access_token);
         addUserLibraryToDatabase(); // TODO: only call this if user is not in the database already...
+        // TODO: handle error (statusCode 429, too many requests)
+        
+        //addUserPlaylistsToDatabase();
+        res.redirect("http://localhost:3000/#token=true");
         //setSpotifyData();
 
     //     var options = {

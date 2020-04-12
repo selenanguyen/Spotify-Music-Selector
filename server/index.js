@@ -24,16 +24,18 @@ app.use(cors());
 var client_id = 'eea02be1f6f34fed9b59426d482c6aee'; // Your client id
 var client_secret = '67c0786a03d14feba40f746ad8d846c3'; // Your secret
 var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
+
+/**
+ * *******************************************************
+ * ******************* SQL CONNECTION ********************
+ * *******************************************************
+ */
 var serverName = "localhost";
 var portNumber = 3306;
-var userName = 'root', password = 'Selenaxmimi0314!';
+var userName = 'root', password = '';
 var db = "spotifyApp";
 var userSpotifyId;
 
-// const rl = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout
-// });
 var connection = mysql.createConnection({
   host     : serverName,
   user     : userName,
@@ -44,22 +46,36 @@ var connection = mysql.createConnection({
 connection.connect((err) => {
   console.log(err);
 });
-// connection.query('SELECT * FROM songs', function (error, results, fields) {
-//   if (error) throw error;
-//   console.log('The solution is: ', results);
-// });
+var spotifyApi = new SpotifyWebApi();
 
+// Error numbers we can ignore and skip adding to the database
 const duplicateEntryErrNo = 1062;
 const entryNameTooLongErrNo = 1406;
 const quotationErrNo = 1064;
 
-var spotifyApi = new SpotifyWebApi();
+/**
+ * *******************************************************
+ * ********** Helper calls to the database ***************
+ * *******************************************************
+ */
 
+/**
+ * Gets all songs belonging to the current user
+ */
 const getUserSongsFromDatabase = () => {
   let sql = `CALL get_all_songs(${userSpotifyId})`;
   return connection.promise().query(sql);
 }
 
+const getPlaylists = () => {
+  let sql = `CALL get_playlists(${userSpotifyId})`
+}
+
+/**
+ * Adds the user to the database
+ * @param {*} id  user id
+ * @param {*} name user name
+ */
 const addUser = (id, name) => {
   let sql = `INSERT INTO users(user_id,user_name) VALUES("${id}","${name}")`;
   connection.query(sql, function (error, results, fields) {
@@ -69,6 +85,13 @@ const addUser = (id, name) => {
   })
 }
 
+/**
+ * Adds the song, artist, album and their user-relationships to the database
+ * @param {*} song 
+ * @param {*} artist 
+ * @param {*} album 
+ * @param {*} userId 
+ */
 const addToDatabase = (song, artist, album, userId) => {
   let addArtistSql = `INSERT INTO artists(artist_id,artist_name) VALUES("${artist.id}",
     "${artist.name}")`;
@@ -113,23 +136,21 @@ const addToDatabase = (song, artist, album, userId) => {
       });
     }
   });
-    // connection.query('SELECT * FROM songs', function (error, results, fields) {
-    //   if (error) throw error;
-    //   console.log('The solution is: ', results[0].solution);
-    // });
-    //rl.close();
 }
 
-
-
-const getUserLibraryFromDatabase = () => {
-
-}
-
+/**
+ * Closes the connection
+ */
 const closeDatabase = () => {
   connection.end();
 }
 
+/**
+ * Adds all the user's tracks to the database
+ * @param {*} offset 
+ * @param {*} userId 
+ * @param {*} getTracksFn 
+ */
 const addTracks = (offset, userId, getTracksFn) => {
   getTracksFn({
     limit: 50,
@@ -170,35 +191,20 @@ const addTracks = (offset, userId, getTracksFn) => {
             if (song.id != "undefined" && userId && artist.id && album.id) {
               addToDatabase(song, artist, album, userId);
             }
-            //console.log(song, artist, album);
-            //console.log("==============UPDATED SONGS IN DB==============");
-            //printSongs();
-            //console.log(song);
         });
         if (tracks.body.next) {
-            //console.log("next: " + tracks.body.next + "\nRequesting offset " + offset + 50 + "next");
             addTracks(offset + 50, userId, getTracksFn);
         }
     }).catch((e) => console.log(e))
 }).catch((e) => console.log(e));
 }
 
+/**
+ * Adds all of the user's saved tracks to the database
+ * @param {*} offset 
+ * @param {*} userId 
+ */
 const addSavedTracks = (offset, userId) => {
-    // console.log("=======================NEW REQUEST===========================");
-    // console.log("Retrieving songs at offset " + offset);
-    // spotifyApi.getUserPlaylists().then((r) => {
-    //     console.log(r);
-    // }).catch((e) => {
-    //     console.log(e);
-    // });
-    // spotifyApi.getMySavedTracks({
-    //     limit: 50,
-    //     offset: offset
-    // }).then((response) => {
-    //     console.log(response)
-    // }).catch((e) => {
-    //     console.log("ERROR: " + e);
-    // });
     spotifyApi.getMySavedTracks({
         limit: 50,
         offset: offset
@@ -251,10 +257,12 @@ const addSavedTracks = (offset, userId) => {
     }).catch((e) => console.log(e));
 }
 
-
+/**
+ * Adds the tracks from the user's playlists to the database
+ * @param {*} offset 
+ * @param {*} userId 
+ */
 const addPlaylistHelper = (offset, userId) => {
-  console.log("=======================NEW REQUEST PLAYLIST===========================");
-  console.log("Retrieving playlists at offset " + offset)
     spotifyApi.getUserPlaylists({
       limit: 50,
       offset: 0
@@ -272,6 +280,9 @@ const addPlaylistHelper = (offset, userId) => {
     })
   }
 
+  /**
+   * Gets the user's id
+   */
 const getUserId = async () => {
   return spotifyApi.getMe().then(({body}) => {
     //console.log("USER:", body, body.id)
@@ -281,6 +292,9 @@ const getUserId = async () => {
   })
 }
 
+/**
+ * Gets the user's profile information
+ */
 const getUser = async () => {
   return spotifyApi.getMe().then(({body}) => {
     console.log(body);
@@ -288,14 +302,18 @@ const getUser = async () => {
   });
 }
 
-  
-  
+  /**
+   * Adds the user's playlists to the database
+   */
 const addUserPlaylistsToDatabase = async () => {
   let id = await getUserId();
   addPlaylistHelper(0, id);
 }
 
 
+/**
+ * Returns whether the current user is already in the database
+ */
 const isUserInDatabase = async () => {
   return getUserId().then((id) => {
     return connection.promise().query(`SELECT user_id FROM users`).then(([rows,fields]) => {
@@ -304,52 +322,28 @@ const isUserInDatabase = async () => {
         return true;
       }
       else {
+        this.userSpotifyId = id;
         return false;
       }
     })
     .catch((e) => {
       console.log("ERROR: ", e)
-      return true;
+      false;
     })
   })
 }
-
+/**
+ * Adds the user's saved songs to the database
+ */
 const addUserLibraryToDatabase = () => {
-    // let history = {
-    //     addToHistory(id) {
-    //         this[id] = true;
-    //     }
-        // TODO: add artists, albums, and songs-to-user to database
     spotifyApi.getMe().then(({body}) => {
-      //console.log("USER:", body, body.id)
       userSpotifyId = body.id;
       addUser(body.id, body.display_name);
       addTracks(0, body.id, spotifyApi.getMySavedTracks.bind(spotifyApi));
     }).catch((err) => {
       throw err;
     })
-    //{
-    //         console.log("in addSavedTracks()");
-    //         addSavedTracks(0, this.addToHistory.bind(this));
-    //         // Getting every 50 saved tracks until entire library has been added
-    //         // while (!isComplete) {
-    //         //     console.log("IN WHILE LOOP !!! offset " + offset);
-    //         //     }
-    //     }
-    // }
-
-    // history.addSavedTracks();
 }
-
-
-// const setSpotifyData = () => {
-//     if (isUserInDatabase()) {
-//         getUserLibraryFromDatabase();
-//     }
-//     else {
-//         addUserLibraryToDatabase();
-//     }
-// }
 
 /**
  * ************************************************************************************
@@ -372,6 +366,13 @@ app.get('/api/getUser', (req, res) => {
   getUser().then((profile) => {
     res.send(JSON.stringify(profile))
   })
+})
+
+app.get('/api/getPlaylists', (req, res) => {
+  // res.setHeader('Content-Type', 'application/json');
+  // getUser().then((profile) => {
+  //   res.send(JSON.stringify(profile))
+  // })
 })
 
 

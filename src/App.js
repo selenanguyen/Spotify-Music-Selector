@@ -1,16 +1,8 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import { UserView } from "./UserView.js";
 import './App.css';
+import { QuizComponent } from "./QuizComponent.js";
 
-class QuizComponent extends Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    return <h3>Quiz!</h3>
-  }
-}
 class AnonymousView extends Component {
   constructor(props) {
     super(props);
@@ -65,6 +57,7 @@ class LoginView extends Component {
           width: '100%',
           display: 'flex',
           justifyContent: 'center',
+          marginTop: '40px',
           flexDirection: 'row'
         }}><a href="http://localhost:3001/login" style={{
           ...buttonStyle, ...spotifyGreen

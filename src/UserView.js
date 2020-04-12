@@ -1,23 +1,8 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { QuizComponent } from "./QuizComponent.js";
+import { ViewPlaylists } from "./ViewPlaylists.js";
 
-class ViewPlaylists extends Component {
-  constructor(props) {
-    this.state = {
-      playlists: null
-    }
-  }
-  componentWillMount() {
-    if (!this.state.playlists) {
-      // fetch playlists and playlist tracks
-    }
-  }
-  render() {
-    return <>playlists go here</>
-  }
-}
 export class UserView extends Component {
   constructor(props) {
     super(props);
@@ -26,6 +11,8 @@ export class UserView extends Component {
       isViewingPlaylists: false,
       isGettingMusic: false
     }
+    this.navBackToProfile = this.navBackToProfile.bind(this);
+    this.navToPlaylists = this.navToPlaylists.bind(this);
   }
   componentWillMount() {
     if (!this.state.userProfile) {
@@ -40,6 +27,23 @@ export class UserView extends Component {
       });
     }
   }
+
+  navBackToProfile() {
+    this.setState({
+      ...this.state,
+      isViewingPlaylists: false,
+      isGettingMusic: false
+    })
+  }
+
+  navToPlaylists() {
+    this.setState({
+      ...this.state,
+      isGettingMusic: false,
+      isViewingPlaylists: true
+    })
+  }
+
   render() {
     const buttonStyle = {
       marginTop: '40px',
@@ -93,10 +97,10 @@ export class UserView extends Component {
       )
     }
     if (this.state.isViewingPlaylists) {
-      return <ViewPlaylists />
+      return <ViewPlaylists navToProfile={this.navBackToProfile} />
     }
     if (this.state.isGettingMusic) {
-      return <QuizComponent />
+      return <QuizComponent navToPlaylists={this.navToPlaylists} navToProfile={this.navToProfile} />
     }
     return (
       <div style={outerDivStyle}>
@@ -141,7 +145,7 @@ export class UserView extends Component {
         }} onClick={() => this.setState({
           ...this.state,
           isViewingPlaylists: true
-        })}>View previously curated playlists</a></div>
+        })}>View playlists</a></div>
           </div>
         </div>
       </div>

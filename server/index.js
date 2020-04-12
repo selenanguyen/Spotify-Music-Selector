@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mysql = require('mysql2');
+const mysql = require('mysql2');//2/promise');
 const SpotifyWebApi = require('spotify-web-api-node');
 
 const pino = require('express-pino-logger')();
@@ -57,7 +57,7 @@ var spotifyApi = new SpotifyWebApi();
 
 const getUserSongsFromDatabase = () => {
   let sql = `CALL get_all_songs(${userSpotifyId})`;
-  return connection.query(sql);
+  return connection.promise().query(sql);
 }
 
 const addUser = (id, name) => {
@@ -274,11 +274,18 @@ const addPlaylistHelper = (offset, userId) => {
 
 const getUserId = async () => {
   return spotifyApi.getMe().then(({body}) => {
-    console.log("USER:", body, body.id)
+    //console.log("USER:", body, body.id)
     userSpotifyId = body.id;
     addUser(body.id, body.display_name);
     return body.id;
   })
+}
+
+const getUser = async () => {
+  return spotifyApi.getMe().then(({body}) => {
+    console.log(body);
+    return body;
+  });
 }
 
   
@@ -288,6 +295,25 @@ const addUserPlaylistsToDatabase = async () => {
   addPlaylistHelper(0, id);
 }
 
+
+const isUserInDatabase = async () => {
+  return getUserId().then((id) => {
+    return connection.promise().query(`SELECT user_id FROM users`).then(([rows,fields]) => {
+      const userIds = rows.map((row) => row.user_id);
+      if (userIds.includes(id)) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    })
+    .catch((e) => {
+      console.log("ERROR: ", e)
+      return true;
+    })
+  })
+}
+
 const addUserLibraryToDatabase = () => {
     // let history = {
     //     addToHistory(id) {
@@ -295,7 +321,7 @@ const addUserLibraryToDatabase = () => {
     //     }
         // TODO: add artists, albums, and songs-to-user to database
     spotifyApi.getMe().then(({body}) => {
-      console.log("USER:", body, body.id)
+      //console.log("USER:", body, body.id)
       userSpotifyId = body.id;
       addUser(body.id, body.display_name);
       addTracks(0, body.id, spotifyApi.getMySavedTracks.bind(spotifyApi));
@@ -325,6 +351,11 @@ const addUserLibraryToDatabase = () => {
 //     }
 // }
 
+/**
+ * ************************************************************************************
+ * API REQUESTS TO OUR SERVER
+ * ************************************************************************************
+ */
 app.get('/api/greeting', (req, res) => {
   const name = req.query.name || 'World';
   res.setHeader('Content-Type', 'application/json');
@@ -336,7 +367,12 @@ app.get('/api/getSongs', (req, res) => {
   res.send(JSON.stringify({ songs: getUserSongsFromDatabase() }))
 })
 
-
+app.get('/api/getUser', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  getUser().then((profile) => {
+    res.send(JSON.stringify(profile))
+  })
+})
 
 
 /**
@@ -364,7 +400,7 @@ var stateKey = 'spotify_auth_state';
 //    .use(cookieParser());
 
 app.get('/here', function(req, res) {
-    console.log('7777777')
+    //console.log('7777777')
 });
 
 app.get('/login', function(req, res) {
@@ -424,9 +460,13 @@ app.get('/callback', function(req, res) {
             refresh_token = body.refresh_token;
 
         spotifyApi.setAccessToken(access_token);
-        addUserLibraryToDatabase(); // TODO: only call this if user is not in the database already...
+        isUserInDatabase().then((isInDatabase) => {
+          if (!isInDatabase) {
+            addUserLibraryToDatabase(); // TODO: only call this if user is not in the database already...
+          }
+        });
         // TODO: handle error (statusCode 429, too many requests)
-        
+
         //addUserPlaylistsToDatabase();
         res.redirect("http://localhost:3000/#token=true");
         //setSpotifyData();
@@ -458,6 +498,7 @@ app.get('/callback', function(req, res) {
     });
   }
 });
+
 
 // app.get('/refresh_token', function(req, res) {
 

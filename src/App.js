@@ -1,14 +1,89 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
+import { UserView } from "./UserView.js";
 import './App.css';
 
+class QuizComponent extends Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return <h3>Quiz!</h3>
+  }
+}
+class AnonymousView extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  renderQuiz() {
+    return <QuizComponent />;
+  }
+
+  render() {
+    return <><h1>this is an anonymous user</h1>
+      {this.renderQuiz()}</>
+  }
+}
+
+class LoginView extends Component {
+  constructor(props) {
+    super(props)
+  }
+  render() {
+    const buttonStyle = {
+      color: 'white',
+      border: 'none',
+      margin: '15px',
+      borderRadius: '5px',
+      padding: '15px 32px',
+      textAlign: 'center',
+      textDecoration: 'none',
+      display: 'inline-block',
+      fontSize: '16px'
+    }
+    const spotifyGreen = {
+      backgroundColor: '#1DB954'
+    }
+    const spotifyBlack = {
+      backgroundColor: '#191414'
+    }
+    const divStyle = {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      textAlign: 'center',
+      alignItems: 'center'
+    }
+    return (
+      <div>
+        <div style={divStyle}><h1>Spotify Music Selector</h1></div>
+        <div style={divStyle}><h3>We'll pick a song or curate a playlist for you based on how you're feeling.</h3></div>
+        <div style={divStyle}><label>Log in with Spotify and we'll select from your own music library. Or use anonymously and we'll select from our database of all kinds of music.</label></div>
+        <div style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'row'
+        }}><a href="http://localhost:3001/login" style={{
+          ...buttonStyle, ...spotifyGreen
+        }} onClick={() => this.props.login(false)}>Log in with Spotify</a>
+        <a href="http://localhost:3000/#login=true" style={{
+          ...buttonStyle,
+          ...spotifyBlack
+        }} onClick={() => this.props.login(true)}>Use anonymously</a></div>
+        
+      </div>
+    )
+  }
+}
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: '',
-      greeting: ''
-
+      isLoggedIn: false,
+      isAnonymous: null
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -42,6 +117,13 @@ class App extends Component {
       .then(state => this.setState(state));
   }
 
+  login(isAnonymous) {
+    this.setState({
+      isLoggedIn: true,
+      isAnonymous: isAnonymous
+    })
+  }
+
   getSongs() {
     // fetch(`/api/getSongs`)
     // .then(response => response.json())
@@ -49,11 +131,24 @@ class App extends Component {
   }
 
   render() {
+    const getComponent = () => {
+      if (this.getHashParams().token) {
+        return <UserView />
+      }
+      if (this.state.isAnonymous) {
+        return <AnonymousView />
+      }
+      return <LoginView login={this.login.bind(this)} />
+    }
     return (
-      <div id="login">
-        <h1>This is an example of the Authorization Code flow</h1>
-        <a href="http://localhost:3001/login" class="btn btn-primary">Log in with Spotify</a>
-      </div>
+      <div style={{
+        height: '100%',
+        marginTop: "30px",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>{getComponent()}</div>
+    )
 
 
       // <div className="App">
@@ -83,7 +178,6 @@ class App extends Component {
       //     </a>
       //   </header>
       // </div>
-    );
   }
 }
 

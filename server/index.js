@@ -35,6 +35,8 @@ var portNumber = 3306;
 var userName = 'root', password = '';
 var db = "spotifyApp";
 var userSpotifyId;
+var access_token;
+var refresh_token;
 
 var connection = mysql.createConnection({
   host     : serverName,
@@ -457,8 +459,8 @@ app.get('/callback', function(req, res) {
 
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
-        var access_token = body.access_token,
-            refresh_token = body.refresh_token;
+        access_token = body.access_token,
+        refresh_token = body.refresh_token;
 
         spotifyApi.setAccessToken(access_token);
         isUserInDatabase().then((isInDatabase) => {
@@ -501,29 +503,40 @@ app.get('/callback', function(req, res) {
 });
 
 
-// app.get('/refresh_token', function(req, res) {
+refresh = () => {
 
-//   // requesting access token from refresh token
-//   var refresh_token = req.query.refresh_token;
-//   var authOptions = {
-//     url: 'https://accounts.spotify.com/api/token',
-//     headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
-//     form: {
-//       grant_type: 'refresh_token',
-//       refresh_token: refresh_token
-//     },
-//     json: true
-//   };
+  console.log("77777")
+  // requesting access token from refresh token
+  var authOptions = {
+    url: 'https://accounts.spotify.com/api/token',
+    headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+    form: {
+      grant_type: 'refresh_token',
+      refresh_token: refresh_token
+    },
+    json: true
+  };
 
-//   request.post(authOptions, function(error, response, body) {
-//     if (!error && response.statusCode === 200) {
-//       var access_token = body.access_token;
-//       res.send({
-//         'access_token': access_token
-//       });
-//     }
-//   });
-// });
+  request.post(authOptions, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      access_token = body.access_token;
+    } else console.log(response.statusCode)
+  });
+};
+
+app.get('/getRandomSong', function(req, res) {
+  let track = 0
+  res.setHeader('Content-Type', 'application/json');
+  // refresh()
+  spotifyApi.setAccessToken(access_token);
+  spotifyApi.getTracks(['0725YWm6Z0TpZ6wrNk64Eb','07oiSjg6TiehyOS3pRJo0l','08xsXR637CEqbxJmpFcuSA']).then(tracks => {
+      console.log(tracks.body.tracks)
+      track = tracks.body.tracks
+  }).then(() => res.send(JSON.stringify({ track }))).catch(e => console.log(e))
+  
+}
+)
+
 app.listen(3001, () =>
   console.log('Express server is running on localhost:3001')
 );

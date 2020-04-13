@@ -43,9 +43,6 @@ var connection = mysql.createConnection({
   database : db,
   port     : portNumber
 });
-connection.connect((err) => {
-  console.log(err);
-});
 var spotifyApi = new SpotifyWebApi();
 
 // Error numbers we can ignore and skip adding to the database
@@ -103,5 +100,3 @@ const getPlaylistTracks = (playlistId) => {
 //   const [ rows, fields ] = response;
 //   console.log("ROWS", rows[0], "FIELDS", fields[0]);
 // })
-var mom = moment("2020-04-12T04:00:00.000Z");
-console.log(mom.utc().format("YYYY-MM-DD"));

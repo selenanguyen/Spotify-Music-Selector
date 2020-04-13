@@ -384,6 +384,33 @@ const addUserLibraryToDatabase = () => {
  * API REQUESTS TO OUR SERVER
  * ************************************************************************************
  */
+app.get('/api/getRandomSongsAnon', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  let sql = `SELECT * from songs ORDER BY RAND() LIMIT 3`;
+  connection.promise().query(sql).then(([rows, fields]) => {
+    res.send(JSON.stringify({
+      rows: rows,
+      fields: fields
+    }));
+  }).catch(e => {
+    console.log(e)
+  })
+
+})
+app.get('/api/getRandomSongsUser', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+   WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  connection.promise().query(sql).then(([rows, fields]) => {
+    res.send(JSON.stringify({
+      rows: rows,
+      fields: fields
+    }))
+  })
+  .catch(e => {
+    console.log(e);
+  });
+})
 app.get('/api/greeting', (req, res) => {
   const name = req.query.name || 'World';
   res.setHeader('Content-Type', 'application/json');

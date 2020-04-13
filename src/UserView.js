@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import { QuizComponent } from "./QuizComponent.js";
+import { QuizView } from "./QuizView.js";
 import { ViewPlaylists } from "./ViewPlaylists.js";
 
 export class UserView extends Component {
@@ -11,8 +11,6 @@ export class UserView extends Component {
       isViewingPlaylists: false,
       isGettingMusic: false
     }
-    this.navBackToProfile = this.navBackToProfile.bind(this);
-    this.navToPlaylists = this.navToPlaylists.bind(this);
   }
   componentWillMount() {
     if (!this.state.userProfile) {
@@ -28,7 +26,7 @@ export class UserView extends Component {
     }
   }
 
-  navBackToProfile() {
+  navBackToProfile = () => {
     this.setState({
       ...this.state,
       isViewingPlaylists: false,
@@ -36,7 +34,7 @@ export class UserView extends Component {
     })
   }
 
-  navToPlaylists() {
+  navToPlaylists = () => {
     this.setState({
       ...this.state,
       isGettingMusic: false,
@@ -100,7 +98,8 @@ export class UserView extends Component {
       return <ViewPlaylists navToProfile={this.navBackToProfile} />
     }
     if (this.state.isGettingMusic) {
-      return <QuizComponent navToPlaylists={this.navToPlaylists} navToProfile={this.navToProfile} />
+      console.log("rendering from user view");
+      return <QuizView navToPlaylists={this.navToPlaylists} navToProfile={this.navBackToProfile} />
     }
     return (
       <div style={outerDivStyle}>

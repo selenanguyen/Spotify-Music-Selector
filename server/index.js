@@ -60,7 +60,7 @@ const invalidPasswordErrNo = 1045;
 
  const getRandomSongs = async () => {
   let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
-  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  WHERE user_songs.user_id = '${userSpotifyId}' ORDER BY RAND() LIMIT 3`;
   return connection.promise().query(sql).then(([rows, fields]) => {
    // res.send(JSON.stringify({
    //   rows: rows,

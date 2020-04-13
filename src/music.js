@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import reactPlayButton from "react-play-button";
-
 
 class Music extends React.Component {
     constructor(props) {
@@ -23,17 +21,28 @@ class Music extends React.Component {
     }
   
     togglePlay = () => {
-        console.log(this.props.url)
       this.setState({ play: !this.state.play }, () => {
         this.state.play ? this.audio.play() : this.audio.pause();
       });
     }
   
     render() {
+      const divStyle = {
+        display: 'flex',
+        flexDirection: 'column',
+        margin: '10px'
+      }
       return (
-        <div>
+        <div style={divStyle}>
           <img src={this.props.image} />
-          <button onClick={this.togglePlay}>{this.state.play ? 'Pause' : 'Play'}</button>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center'
+          }}><button style={{
+            marginTop: '10px'
+          }} onClick={this.togglePlay}>{this.state.play ? 'Pause' : 'Play'}</button></div>
+          {this.props.children}
         </div>
       );
     }

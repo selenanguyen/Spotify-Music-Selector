@@ -26,33 +26,58 @@ import ReactDOM from 'react-dom';
         isSure:false,
   
   
-        checked:false
+        checked:false,
+        ratings: [0,0,0]
   
       };
       // this.handleChange = this.handleChange.bind(this);
       // this.handleSubmit = this.handleSubmit.bind(this);
     }
-    
+
+    renderRating = (songid) => {
+      return <div style={{
+        marginTop: '10px',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center'
+      }}><Rating initialRating={this.state.ratings[songid - 1]} start={0} stop={5}
+        onChange={(value) => this.setState({
+          ratings: this.state.ratings.map((rate, index) => 
+            index === songid - 1 ? value : rate
+          )}
+      )} /></div>
+    }
 
     render() {
-        return (
-            <>
-            <Music url={this.state.song1play} image={this.state.pic1}></Music>
-            <Music url={this.state.song2play} image={this.state.pic2}></Music>
-            <Music url={this.state.song3play} image={this.state.pic3}></Music>
-            <label>
-                    <Checkbox
-                      checked={this.state.checked}
-                      onChange={value => {
-                        console.log(value)
-                        this.setState({checked:!this.state.checked})
-                      }}
-                      disabled={this.state.disabled}
-                    />
-                    &nbsp; controlled checked rc-checkbox
-            </label>
-      
-            
+      const rowStyle = {
+        display: 'flex',
+        flexDirection: 'row'
+      }
+      const columnStyle = {
+        display: 'flex',
+        flexDirection: 'column'
+      }
+        return (<><div style={{
+          ...rowStyle,
+          justifyContent: 'center'
+        }}><h2>Rank the following tracks and give us your opinions.</h2></div>
+            <div style={rowStyle}>
+              <div style={columnStyle}>
+                <Music url={this.state.song1play} image={this.state.pic1}>
+                  {this.renderRating(1)}
+                {/* insert form here */}
+                </Music></div>
+              <div style={columnStyle}>
+                <Music url={this.state.song2play} image={this.state.pic2}>
+                  {this.renderRating(2)}
+                {/* insert form here */}
+                </Music></div>
+              <div style={columnStyle}>
+                <Music url={this.state.song3play} image={this.state.pic3}>
+                  {this.renderRating(3)}
+                {/* insert form here */}
+                </Music></div>
+          </div>
           </>
         )}
     }

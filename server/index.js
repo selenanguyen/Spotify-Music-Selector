@@ -30,11 +30,14 @@ var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
  * ******************* SQL CONNECTION ********************
  * *******************************************************
  */
-var serverName = "localhost";
-var portNumber = 3306;
-var userName = 'root', password = '';
-var db = "spotifyApp";
+// var serverName = "localhost";
+// var portNumber = 3306;
+// var userName = 'root', password = '';
+// var db = "spotifyApp";
+// var userSpotifyId;
+var connection;
 var userSpotifyId;
+<<<<<<< HEAD
 var access_token;
 var refresh_token;
 
@@ -48,12 +51,15 @@ var connection = mysql.createConnection({
 connection.connect((err) => {
   console.log(err);
 });
+=======
+>>>>>>> f11ac558af0549160a91b46943bf97d772469b8a
 var spotifyApi = new SpotifyWebApi();
 
 // Error numbers we can ignore and skip adding to the database
 const duplicateEntryErrNo = 1062;
 const entryNameTooLongErrNo = 1406;
 const quotationErrNo = 1064;
+const invalidPasswordErrNo = 1045;
 
 /**
  * *******************************************************
@@ -69,8 +75,44 @@ const getUserSongsFromDatabase = () => {
   return connection.promise().query(sql);
 }
 
+const removePlaylist = (id) => {
+  let sql = `DELETE FROM playlists WHERE playlist_id = '${id}';`
+  return connection.promise().query(sql).then((response) => true)
+  .catch((e) => {
+    console.log("ERROR REMOVING PLAYLIST " + id + ":", e);
+  })
+}
+
 const getPlaylists = () => {
   let sql = `CALL get_playlists(${userSpotifyId})`
+  return connection.promise().query(sql).then((response) =>{
+    return response;
+  }).catch((e) => {
+    console.log("ERROR:", e);
+  });
+}
+
+const getPlaylistTracks = (playlistId) => {
+  console.log("GETTING PLAYLISTS FOR PLAYLIST " + playlistId);
+  let sql = `CALL get_playlist_songs('${playlistId}')`
+  return connection.promise().query(sql).then((response) =>{
+    console.log(response);
+    return response;
+  }).catch((e) => {
+    console.log("ERROR:", e);
+  });
+}
+
+const updatePlaylistField = async (id, field, value) => {
+  console.log("updating " + id + " playlist " + field + " to " + value)
+  let sql = `UPDATE playlists
+    SET ${field} = '${value}' WHERE playlist_id = '${id}';`
+  return connection.promise().query(sql).then((resp) => {
+    return true;
+  }).catch(e => {
+    console.log(e)
+    return false;
+  });
 }
 
 /**
@@ -317,14 +359,18 @@ const addUserPlaylistsToDatabase = async () => {
  * Returns whether the current user is already in the database
  */
 const isUserInDatabase = async () => {
-  return getUserId().then((id) => {
+  return getUser().then(({ id, display_name }) => {
     return connection.promise().query(`SELECT user_id FROM users`).then(([rows,fields]) => {
       const userIds = rows.map((row) => row.user_id);
       if (userIds.includes(id)) {
+        console.log("User " + id + " in database")
+        userSpotifyId = id;
         return true;
       }
       else {
-        this.userSpotifyId = id;
+        console.log("User not in database")
+        addUser(id, display_name);
+        userSpotifyId = id;
         return false;
       }
     })
@@ -358,6 +404,53 @@ app.get('/api/greeting', (req, res) => {
   res.send(JSON.stringify({ greeting: `Hello ${name}!` }));
 });
 
+app.get('/api/databaseLogin', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  let username = req.query.usr;
+  let password = req.query.pw;
+  var serverName = "localhost";
+  var portNumber = 3306;
+  var db = "spotifyApp";
+  connection = mysql.createConnection({
+    host     : serverName,
+    user     : username,
+    password : password,
+    database : db,
+    port     : portNumber
+  });
+  console.log("Created connection")
+  // res.send(JSON.stringify({ success: true }));
+  connection.promise().connect().then(r => {
+    res.send(JSON.stringify({success: true}))
+  }).catch(e => {
+    console.log("PRINTED ERROR", e);
+    if (e.errno === invalidPasswordErrNo) {
+      res.setHeader('message', 'Invalid username or password');
+      res.status(401).send({
+        status: "Unauthorized",
+        message: "Invalid username or password"
+      });
+    }
+    else {
+      res.setHeader('message', e.sqlMessage);
+      res.status(404).send({
+        status: "Error",
+        message: e.sqlMessage
+      })
+    }
+  });
+});
+
+app.get('/api/removePlaylist', (req, res) => {
+  const id = req.query.id;
+  res.setHeader('Content-Type', 'application/json');
+  if (!id) {
+    console.log("No id given: ", id);
+    throw new Error("Invalid argument for remove playlist:", id);
+  }
+  removePlaylist(id).then((resp) => res.send(JSON.stringify(resp)));
+})
+
 app.get('/api/getSongs', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify({ songs: getUserSongsFromDatabase() }))
@@ -371,11 +464,39 @@ app.get('/api/getUser', (req, res) => {
 })
 
 app.get('/api/getPlaylists', (req, res) => {
-  // res.setHeader('Content-Type', 'application/json');
-  // getUser().then((profile) => {
-  //   res.send(JSON.stringify(profile))
-  // })
+  res.setHeader('Content-Type', 'application/json');
+  getPlaylists().then(([ rows, fields ]) => {
+    console.log("ROWS:", rows, "FIELDS:", fields);
+    res.send(JSON.stringify({
+      rows: rows[0], fields: fields[0]
+    }));
+  })
 })
+
+app.get('/api/getPlaylistTracks', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  getPlaylistTracks(req.query.id).then(([ rows, fields ]) => {
+    console.log("ROWS:", rows, "FIELDS:", fields);
+    res.send(JSON.stringify({
+      rows: rows[0], fields: fields[0]
+    }));
+  })
+})
+
+app.get('/api/updatePlaylistField', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  if (!req.query.id || (!req.query.desc && !req.query.title)) {
+    console.log("Invalid args", req.query.id, req.query.title);
+    throw new Error("Invalid arguments for updating playlist field: " + req.query);
+  }
+  if (req.query.desc) {
+    res.send(JSON.stringify(updatePlaylistField(req.query.id, "playlist_description", req.query.desc)));
+  }
+  else {
+    res.send(JSON.stringify(updatePlaylistField(req.query.id, "playlist_name", req.query.title)));
+  }
+})
+
 
 
 /**
@@ -471,7 +592,7 @@ app.get('/callback', function(req, res) {
         // TODO: handle error (statusCode 429, too many requests)
 
         //addUserPlaylistsToDatabase();
-        res.redirect("http://localhost:3000/#token=true");
+        // res.redirect("http://localhost:3000/#database=authorized&token=true");
         //setSpotifyData();
 
     //     var options = {
@@ -486,7 +607,7 @@ app.get('/callback', function(req, res) {
     //     });
     
         // we can also pass the token to the browser to make requests from there
-        // res.redirect('http://localhost:3000/#token=true');
+        res.redirect('http://localhost:3000/#token=true');
       } 
 
       

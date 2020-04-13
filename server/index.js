@@ -57,6 +57,47 @@ const invalidPasswordErrNo = 1045;
 /**
  * Gets all songs belonging to the current user
  */
+
+ const getRandomSongs = async () => {
+  let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  return connection.promise().query(sql).then(([rows, fields]) => {
+   // res.send(JSON.stringify({
+   //   rows: rows,
+   //   fields: fields
+   // }))
+   return rows
+ })
+ .then(rows => {
+   spotifyApi.setAccessToken(access_token);
+   let findTrack = (id, spotifyTracks) => {
+     return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
+   }
+   let ids = rows.map(track => track.song_id);
+   return spotifyApi.getTracks(ids).then(tracks => {
+     let tracksAreValid = true;
+     tracks.body.tracks.forEach(spTrack => {
+       if (!spTrack.preview_url) {
+         tracksAreValid = false;
+       }
+     });
+     if (!tracksAreValid) {
+       return getRandomSongs();
+     }
+     track = tracks.body.tracks;
+     let newTracks = rows.map((dbTrack) => {
+       return {
+         ...dbTrack,
+         ...findTrack(dbTrack.song_id, tracks.body.tracks)
+       }
+     });
+     return newTracks;
+ })
+}).catch(e => {
+  console.log(e)
+})
+}
+
 const getUserSongsFromDatabase = () => {
   let sql = `CALL get_all_songs(${userSpotifyId})`;
   return connection.promise().query(sql);
@@ -384,6 +425,33 @@ const addUserLibraryToDatabase = () => {
  * API REQUESTS TO OUR SERVER
  * ************************************************************************************
  */
+app.get('/api/getRandomSongsAnon', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  let sql = `SELECT * from songs ORDER BY RAND() LIMIT 3`;
+  connection.promise().query(sql).then(([rows, fields]) => {
+    res.send(JSON.stringify({
+      rows: rows,
+      fields: fields
+    }));
+  }).catch(e => {
+    console.log(e)
+  })
+
+})
+app.get('/api/getRandomSongsUser', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+   WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  connection.promise().query(sql).then(([rows, fields]) => {
+    res.send(JSON.stringify({
+      rows: rows,
+      fields: fields
+    }))
+  })
+  .catch(e => {
+    console.log(e);
+  });
+})
 app.get('/api/greeting', (req, res) => {
   const name = req.query.name || 'World';
   res.setHeader('Content-Type', 'application/json');
@@ -634,15 +702,38 @@ refresh = () => {
 app.get('/getRandomSong', function(req, res) {
   let track = 0
   res.setHeader('Content-Type', 'application/json');
+  getRandomSongs().then(tracks => res.send(JSON.stringify({ tracks })));
+});
   // refresh()
-  spotifyApi.setAccessToken(access_token);
-  spotifyApi.getTracks(['0725YWm6Z0TpZ6wrNk64Eb','07oiSjg6TiehyOS3pRJo0l','08xsXR637CEqbxJmpFcuSA']).then(tracks => {
-      console.log(tracks.body.tracks)
-      track = tracks.body.tracks
-  }).then(() => res.send(JSON.stringify({ track }))).catch(e => console.log(e))
-  
-}
-)
+  // let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+  //  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  // connection.promise().query(sql).then(([rows, fields]) => {
+  //   // res.send(JSON.stringify({
+  //   //   rows: rows,
+  //   //   fields: fields
+  //   // }))
+  //   return rows
+  // })
+  // .then(rows => {
+  //   spotifyApi.setAccessToken(access_token);
+  //   let findTrack = (id, spotifyTracks) => {
+  //     return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
+  //   }
+  //   let ids = rows.map(track => track.song_id);
+  //   spotifyApi.getTracks(ids).then(tracks => {
+  //     track = tracks.body.tracks;
+  //     let newTracks = rows.map((dbTrack) => {
+  //       return {
+  //         ...dbTrack,
+  //         ...findTrack(dbTrack.song_id, tracks.body.tracks)
+  //       }
+  //     });
+  //     res.send(JSON.stringify({ tracks: newTracks }));
+  // }).catch(e => console.log(e))
+  // })
+  // .catch(e => {
+  //   console.log(e);
+  // });
 
 app.listen(3001, () =>
   console.log('Express server is running on localhost:3001')

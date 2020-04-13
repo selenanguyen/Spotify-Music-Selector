@@ -172,6 +172,13 @@ export class ViewPlaylists extends Component {
       marginBottom: '10px'
     }
 
+    const backToProfileButtonStyle = {
+      ...buttonStyle,
+      marginTop: '-50px',
+      backgroundColor: '#555555',
+      color: 'white'
+    }
+
     const submitStyle = {
       borderRadius: '2px'
     }
@@ -195,6 +202,7 @@ export class ViewPlaylists extends Component {
     }
     return <div style={tablesLayout}>
     <h2>Playlists we've curated for you.</h2>
+    <div><button style={backToProfileButtonStyle} onClick={this.props.navToProfile}>Back to profile</button></div>
     {this.state.playlists.map((playlist) => {
       if (!playlist.tracks || !playlist.playlist_id) {
         console.log('UNDEFINED TRACKS FOR PLAYLIST', playlist, playlist["tracks"]);
@@ -209,16 +217,18 @@ export class ViewPlaylists extends Component {
             <input style={{ marginLeft: '10px' }} type="text" value={this.state.playlistInputFields[id].title} 
               onChange={(e) => this.onInputChange(id, e.target.value, "title")}
               id={`${id} name`} /></label>
-              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" onClick={() => this.onUpdateInputToDatabase(id, "title")}
+              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" value="update playlist name"
+                onClick={() => this.onUpdateInputToDatabase(id, "title")}
                 disabled={!this.isPlaylistInputFieldUpdated(id, "title")} />
               <br />
             <label style={labelStyle} for={`${id} desc`}>description: 
             <input type="text" style={{ marginLeft: '10px', marginTop: '10px' }} 
-              value={this.state.playlistInputFields[id].desc}
-              id={`${id} desc`} 
-              onChange={(e) => this.onInputChange(id, e.target.value, "desc")}
-              /></label>
-              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" onClick={() => this.onUpdateInputToDatabase(id, "desc")}
+                value={this.state.playlistInputFields[id].desc}
+                id={`${id} desc`} 
+                onChange={(e) => this.onInputChange(id, e.target.value, "desc")}
+            /></label>
+              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" value="update playlist description"
+                onClick={() => this.onUpdateInputToDatabase(id, "desc")}
                 disabled={!this.isPlaylistInputFieldUpdated(id, "desc")} />
               <br />
           </form>

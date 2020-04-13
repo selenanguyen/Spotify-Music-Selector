@@ -18,18 +18,19 @@ class DatabaseLoginView extends Component {
   handleSubmit() {
     const onDatabaseLoginSuccess = this.props.onDatabaseLoginSuccess;
     const setState = this.setState.bind(this);
-    console.log("About to fetch");
     fetch(`/api/databaseLogin?usr=${encodeURIComponent(this.state.username)}&pw=${encodeURIComponent(this.state.password)}`)
     .then(r => {
-      console.log("RECEIVED IN CLIENT ", r)
       return r.json()
     }).then(r => {
       if (r.success) {
-        console.log("SUCCESS IN CLIENT!", r);
         this.props.onDatabaseLoginSuccess();
       }
+      else {
+        setState({
+          errorMsg: r.message
+        })
+      }
     }).catch(e => {
-      console.log("Got an error")
       setState({
         errorMsg: "Invalid username or password"
       })
@@ -47,6 +48,9 @@ class DatabaseLoginView extends Component {
     })
   }
   render() {
+    const labelStyle = {
+      marginTop: '15px'
+    }
     return (
     <span style={{
       display: 'flex',
@@ -54,14 +58,15 @@ class DatabaseLoginView extends Component {
     }}><h3>Log into the database using your credentials.</h3>
     {this.state.errorMsg && <label style={{color: 'red'}}>{this.state.errorMsg}</label>}
       <form style={{ textAlign: 'left'}}>
-        <div><label>username: 
+        <div><label style={labelStyle}>username: 
           <input type="text" value={this.state.username} onChange={(e) => this.updateUsername(e.target.value)} />
         </label></div>
-        <div><label>password: 
+        <div><label style={labelStyle} >password: 
           <input type="password" value={this.state.password} onChange={(e) => this.updatePassword(e.target.value)}/>
         </label></div>
       </form>
-      <div style={{ display: 'flex', flexDirection: 'row'}}><button onClick={this.handleSubmit}>log in</button></div>
+      <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'row'}}>
+        <button onClick={this.handleSubmit}>log in</button></div>
     </span>
     );
   }
@@ -164,16 +169,13 @@ class App extends Component {
     var e, r = /([^&;=]+)=?([^&;]*)/g,
     q = window.location.hash.substring(1);
     //q = window.location.href.substring(window.location.origin.length + 2);
-    console.log("url", window.location.origin, "q: " + q);
     while ( e = r.exec(q)) {
       hashParams[e[1]] = decodeURIComponent(e[2]);
     }
-    console.log("hash params: ", hashParams);
     return hashParams;
   }
 
   onDatabaseLoginSuccess() {
-    console.log("Getting state change");
     this.setState({
       ...this.state,
       isLoggedIntoDatabase: true

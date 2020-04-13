@@ -3,6 +3,70 @@ import { UserView } from "./UserView.js";
 import './App.css';
 import { QuizComponent } from "./QuizComponent.js";
 
+class DatabaseLoginView extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: 'root',
+      password: '',
+      errorMsg: null
+    }
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.updateUsername = this.updateUsername.bind(this);
+    this.updatePassword = this.updatePassword.bind(this);
+  }
+  handleSubmit() {
+    const onDatabaseLoginSuccess = this.props.onDatabaseLoginSuccess;
+    const setState = this.setState.bind(this);
+    console.log("About to fetch");
+    fetch(`/api/databaseLogin?usr=${encodeURIComponent(this.state.username)}&pw=${encodeURIComponent(this.state.password)}`)
+    .then(r => {
+      console.log("RECEIVED IN CLIENT ", r)
+      return r.json()
+    }).then(r => {
+      if (r.success) {
+        console.log("SUCCESS IN CLIENT!", r);
+        this.props.onDatabaseLoginSuccess();
+      }
+    }).catch(e => {
+      console.log("Got an error")
+      setState({
+        errorMsg: "Invalid username or password"
+      })
+    })
+  }
+
+  updateUsername(usrn) {
+    this.setState({
+      username: usrn
+    })
+  }
+  updatePassword(pw) {
+    this.setState({
+      password: pw
+    })
+  }
+  render() {
+    return (
+    <span style={{
+      display: 'flex',
+      flexDirection: 'column'
+    }}><h3>Log into the database using your credentials.</h3>
+    {this.state.errorMsg && <label style={{color: 'red'}}>{this.state.errorMsg}</label>}
+      <form style={{ textAlign: 'left'}}>
+        <div><label>username: 
+          <input type="text" value={this.state.username} onChange={(e) => this.updateUsername(e.target.value)} />
+        </label></div>
+        <div><label>password: 
+          <input type="password" value={this.state.password} onChange={(e) => this.updatePassword(e.target.value)}/>
+        </label></div>
+      </form>
+      <div style={{ display: 'flex', flexDirection: 'row'}}><button onClick={this.handleSubmit}>log in</button></div>
+    </span>
+    );
+  }
+}
+
 class AnonymousView extends Component {
   constructor(props) {
     super(props);
@@ -71,16 +135,19 @@ class LoginView extends Component {
     )
   }
 }
+
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isLoggedIn: false,
+      isLoggedIntoDatabase: false,
       isAnonymous: null
     };
     this.login = this.login.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.onDatabaseLoginSuccess = this.onDatabaseLoginSuccess.bind(this);
     // if (this.getHashParams().token) {
     //   this.getSongs();
     // }
@@ -88,7 +155,8 @@ class App extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     return this.state.isLoggedIn != nextState.isLoggedIn
-      || this.state.isAnonymous != nextState.isAnonymous;
+      || this.state.isAnonymous != nextState.isAnonymous
+      || this.state.isLoggedIntoDatabase != nextState.isLoggedIntoDatabase;
   }
 
   getHashParams = () => {
@@ -104,6 +172,13 @@ class App extends Component {
     return hashParams;
   }
 
+  onDatabaseLoginSuccess() {
+    console.log("Getting state change");
+    this.setState({
+      ...this.state,
+      isLoggedIntoDatabase: true
+    })
+  }
 
   handleChange(event) {
     this.setState({ name: event.target.value });
@@ -133,6 +208,9 @@ class App extends Component {
     const getComponent = () => {
       if (this.getHashParams().token) {
         return <UserView />
+      }
+      if (!this.state.isLoggedIntoDatabase) {
+        return <DatabaseLoginView onDatabaseLoginSuccess={this.onDatabaseLoginSuccess} />
       }
       if (this.state.isAnonymous) {
         return <AnonymousView />

@@ -30,28 +30,20 @@ var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
  * ******************* SQL CONNECTION ********************
  * *******************************************************
  */
-var serverName = "localhost";
-var portNumber = 3306;
-var userName = 'root', password = 'Selenaxmimi0314!';
-var db = "spotifyApp";
+// var serverName = "localhost";
+// var portNumber = 3306;
+// var userName = 'root', password = '';
+// var db = "spotifyApp";
+// var userSpotifyId;
+var connection;
 var userSpotifyId;
-
-var connection = mysql.createConnection({
-  host     : serverName,
-  user     : userName,
-  password : password,
-  database : db,
-  port     : portNumber
-});
-connection.connect((err) => {
-  console.log(err);
-});
 var spotifyApi = new SpotifyWebApi();
 
 // Error numbers we can ignore and skip adding to the database
 const duplicateEntryErrNo = 1062;
 const entryNameTooLongErrNo = 1406;
 const quotationErrNo = 1064;
+const invalidPasswordErrNo = 1045;
 
 /**
  * *******************************************************
@@ -396,6 +388,43 @@ app.get('/api/greeting', (req, res) => {
   res.send(JSON.stringify({ greeting: `Hello ${name}!` }));
 });
 
+app.get('/api/databaseLogin', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  let username = req.query.usr;
+  let password = req.query.pw;
+  var serverName = "localhost";
+  var portNumber = 3306;
+  var db = "spotifyApp";
+  connection = mysql.createConnection({
+    host     : serverName,
+    user     : username,
+    password : password,
+    database : db,
+    port     : portNumber
+  });
+  console.log("Created connection")
+  // res.send(JSON.stringify({ success: true }));
+  connection.promise().connect().then(r => {
+    res.send(JSON.stringify({success: true}))
+  }).catch(e => {
+    console.log("PRINTED ERROR", e);
+    if (e.errno === invalidPasswordErrNo) {
+      res.setHeader('message', 'Invalid username or password');
+      res.status(401).send({
+        status: "Unauthorized",
+        message: "Invalid username or password"
+      });
+    }
+    else {
+      res.setHeader('message', e.sqlMessage);
+      res.status(404).send({
+        status: "Error",
+        message: e.sqlMessage
+      })
+    }
+  });
+});
+
 app.get('/api/removePlaylist', (req, res) => {
   const id = req.query.id;
   res.setHeader('Content-Type', 'application/json');
@@ -547,7 +576,7 @@ app.get('/callback', function(req, res) {
         // TODO: handle error (statusCode 429, too many requests)
 
         //addUserPlaylistsToDatabase();
-        res.redirect("http://localhost:3000/#token=true");
+        // res.redirect("http://localhost:3000/#database=authorized&token=true");
         //setSpotifyData();
 
     //     var options = {
@@ -562,7 +591,7 @@ app.get('/callback', function(req, res) {
     //     });
     
         // we can also pass the token to the browser to make requests from there
-        // res.redirect('http://localhost:3000/#token=true');
+        res.redirect('http://localhost:3000/#token=true');
       } 
 
       

@@ -213,7 +213,7 @@ export class ViewPlaylists extends Component {
         <div style={{
           textAlign: 'center'
         }}>
-          <form style={{ textAlign: 'left' }}><label style={labelStyle} for={`${id} name`}>name: 
+          <form style={{ textAlign: 'left' }}><label style={labelStyle}>name: 
             <input style={{ marginLeft: '10px' }} type="text" value={this.state.playlistInputFields[id].title} 
               onChange={(e) => this.onInputChange(id, e.target.value, "title")}
               id={`${id} name`} /></label>
@@ -221,7 +221,7 @@ export class ViewPlaylists extends Component {
                 onClick={() => this.onUpdateInputToDatabase(id, "title")}
                 disabled={!this.isPlaylistInputFieldUpdated(id, "title")} />
               <br />
-            <label style={labelStyle} for={`${id} desc`}>description: 
+            <label style={labelStyle}>description: 
             <input type="text" style={{ marginLeft: '10px', marginTop: '10px' }} 
                 value={this.state.playlistInputFields[id].desc}
                 id={`${id} desc`} 

@@ -7,53 +7,23 @@ import ReactDOM from 'react-dom';
 
 
 
-
-
-
-songpicker = () => {
-    return(
-
-    )
-  }
-
-
-
-  export class QuizPart2 extends Component {
+ export class QuizPart2 extends Component {
     constructor(props) {
       super(props);
       this.state = {
-        isSure: true,
-        acousticness: 0,
-        danceability: 0,
-        energy: 0,
-        instrumentalness: 0,
-        loudness: 0,
-        valence: 0,
-        tempo: 0,
-        acousticnessWeight: 0,
-        danceabilityWeight: 0,
-        energyWeight: 0,
-        instrumentalnessWeight: 0,
-        loudnessWeight: 0,
-        valenceWeight: 0,
-        tempoWeight: 0,
-  
-  
-        inputsAcc:[],
-  
-        //what they like about hte song
-        song1id: this.props.,
-        song1play: null,
-        pic1: null,
-        song2id: null,
-        song2play: null,
-        pic2: null,
-        song2id:null,
-        song2play: null,
-        pic3: null,
-        hasSongsToDisplay: false,
+        
         isloading:false,
-  
+        song1id: this.props.songData[0].id,
+        song1play: this.props.songData[0].preview_url,
+        pic1: this.props.songData[0].album.images[1].url,
+        song2id: this.props.songData[1].id,
+        song2play: this.props.songData[1].preview_url,
+        pic2: this.props.songData[1].album.images[1].url,
+        song3id: this.props.songData[2].id,
+        song3play: this.props.songData[2].preview_url,
+        pic3: this.props.songData[2].album.images[1].url,
+        hasSongsToDisplay: true,
+        isSure:false,
   
   
         checked:false
@@ -62,6 +32,7 @@ songpicker = () => {
       // this.handleChange = this.handleChange.bind(this);
       // this.handleSubmit = this.handleSubmit.bind(this);
     }
+    
 
     render() {
         return (

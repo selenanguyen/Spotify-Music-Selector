@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Rating from 'react-rating';
-import QuizPart2 from './quiz2.js';
+import {QuizPart2} from './quiz2.js';
 
 
 export class QuizComponent extends Component {
@@ -58,6 +58,7 @@ export class QuizComponent extends Component {
     })
     .then((track) => {
       let data = track.tracks
+      console.log(data)
       this.setState({isloading:false,
         songData:data,
         hasSongsToDisplay: true,

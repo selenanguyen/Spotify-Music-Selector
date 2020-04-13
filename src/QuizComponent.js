@@ -8,6 +8,7 @@ export class QuizComponent extends Component {
     super(props);
     this.state = {
       isSure: true,
+      
       acousticness: 0,
       danceability: 0,
       energy: 0,
@@ -23,7 +24,7 @@ export class QuizComponent extends Component {
       valenceWeight: 0,
       tempoWeight: 0,
 
-
+      num_songs:0,
       inputsAcc:[],
 
       songData:{},
@@ -67,6 +68,34 @@ export class QuizComponent extends Component {
     })
   })
 }
+
+   generatePlaylist = scoresAndWeights => {
+    if(this.state.isloading){
+      return
+    }
+    this.setState({isloading:true})
+    fetch('http://localhost:3001/genPlaylist', {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(scoresAndWeights),
+    })
+    .post()
+    .then((response) => {
+      return response.json();
+    })
+    .then((track) => {
+      // let data = track.tracks
+      console.log(data)
+    //   this.setState({isloading:false,
+    //     songData:data,
+    //     hasSongsToDisplay: true,
+    //     isSure:false,
+
+    // })
+  })
+   }
 
 
 

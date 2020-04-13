@@ -57,6 +57,47 @@ const invalidPasswordErrNo = 1045;
 /**
  * Gets all songs belonging to the current user
  */
+
+ const getRandomSongs = async () => {
+  let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  return connection.promise().query(sql).then(([rows, fields]) => {
+   // res.send(JSON.stringify({
+   //   rows: rows,
+   //   fields: fields
+   // }))
+   return rows
+ })
+ .then(rows => {
+   spotifyApi.setAccessToken(access_token);
+   let findTrack = (id, spotifyTracks) => {
+     return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
+   }
+   let ids = rows.map(track => track.song_id);
+   return spotifyApi.getTracks(ids).then(tracks => {
+     let tracksAreValid = true;
+     tracks.body.tracks.forEach(spTrack => {
+       if (!spTrack.preview_url) {
+         tracksAreValid = false;
+       }
+     });
+     if (!tracksAreValid) {
+       return getRandomSongs();
+     }
+     track = tracks.body.tracks;
+     let newTracks = rows.map((dbTrack) => {
+       return {
+         ...dbTrack,
+         ...findTrack(dbTrack.song_id, tracks.body.tracks)
+       }
+     });
+     return newTracks;
+ })
+}).catch(e => {
+  console.log(e)
+})
+}
+
 const getUserSongsFromDatabase = () => {
   let sql = `CALL get_all_songs(${userSpotifyId})`;
   return connection.promise().query(sql);
@@ -661,44 +702,38 @@ refresh = () => {
 app.get('/getRandomSong', function(req, res) {
   let track = 0
   res.setHeader('Content-Type', 'application/json');
+  getRandomSongs().then(tracks => res.send(JSON.stringify({ tracks })));
+});
   // refresh()
-  let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
-   WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
-  connection.promise().query(sql).then(([rows, fields]) => {
-    // res.send(JSON.stringify({
-    //   rows: rows,
-    //   fields: fields
-    // }))
-    return rows
-  })
-  .then(rows => {
-    spotifyApi.setAccessToken(access_token);
-    let findTrack = (id, spotifyTracks) => {
-      return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
-    }
-    console.log("Rows", rows);
-    let ids = rows.map(track => track.song_id);
-    console.log("Random track ids:", ids);
-    spotifyApi.getTracks(ids).then(tracks => {
-      console.log(tracks.body.tracks)
-      track = tracks.body.tracks;
-      let newTracks = rows.map((dbTrack) => {
-        return {
-          ...dbTrack,
-          ...findTrack(dbTrack.song_id, tracks.body.tracks)
-        }
-      });
-      console.log("Sending tracks", newTracks)
-      res.send(JSON.stringify({ tracks: newTracks }));
-  }).catch(e => console.log(e))
-  })
-  .catch(e => {
-    console.log(e);
-  });
-  
-  
-}
-)
+  // let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+  //  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  // connection.promise().query(sql).then(([rows, fields]) => {
+  //   // res.send(JSON.stringify({
+  //   //   rows: rows,
+  //   //   fields: fields
+  //   // }))
+  //   return rows
+  // })
+  // .then(rows => {
+  //   spotifyApi.setAccessToken(access_token);
+  //   let findTrack = (id, spotifyTracks) => {
+  //     return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
+  //   }
+  //   let ids = rows.map(track => track.song_id);
+  //   spotifyApi.getTracks(ids).then(tracks => {
+  //     track = tracks.body.tracks;
+  //     let newTracks = rows.map((dbTrack) => {
+  //       return {
+  //         ...dbTrack,
+  //         ...findTrack(dbTrack.song_id, tracks.body.tracks)
+  //       }
+  //     });
+  //     res.send(JSON.stringify({ tracks: newTracks }));
+  // }).catch(e => console.log(e))
+  // })
+  // .catch(e => {
+  //   console.log(e);
+  // });
 
 app.listen(3001, () =>
   console.log('Express server is running on localhost:3001')

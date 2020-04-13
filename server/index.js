@@ -704,6 +704,35 @@ app.get('/getRandomSong', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   getRandomSongs().then(tracks => res.send(JSON.stringify({ tracks })));
 });
+
+app.get('/genPlaylist', function(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+
+  //create playlist id
+  //call procedure that creates playlist (with this id, and user)
+  //uses shit ton of inuts to call generate playlist
+  //call get playlist tracks thing, return that
+
+  // acousticness: 0,
+  // danceability: 0,
+  // energy: 0,
+  // instrumentalness: 0,
+  // loudness: 0,
+  // valence: 0,
+  // tempo: 0,
+  // acousticnessWeight: 0,
+  // danceabilityWeight: 0,
+  // energyWeight: 0,
+  // instrumentalnessWeight: 0,
+  // loudnessWeight: 0,
+  // valenceWeight: 0,
+  // tempoWeight: 0,
+  // numbersongs:0
+  
+});
+
+
+
   // refresh()
   // let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
   //  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;

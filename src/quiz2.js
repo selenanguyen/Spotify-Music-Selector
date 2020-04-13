@@ -22,6 +22,18 @@ import ReactDOM from 'react-dom';
         song3id: this.props.songData[2].id,
         song3play: this.props.songData[2].preview_url,
         pic3: this.props.songData[2].album.images[1].url,
+
+
+        weights:[0,0,0],
+
+        acousticness: [0,0,0],
+        danceability: [0,0,0],
+        energy: [0,0,0],
+        instrumentalness: [0,0,0],
+        loudness: [0,0,0],
+        valence: [0,0,0],
+        tempo: [0,0,0],
+
         hasSongsToDisplay: true,
         isSure:false,
   
@@ -33,6 +45,84 @@ import ReactDOM from 'react-dom';
       // this.handleSubmit = this.handleSubmit.bind(this);
     }
     
+    checkboxes1 = () => {
+        return(
+            <form>
+            <label>
+              Is going:
+              <input
+                name="The Acousticness Level"
+                type="checkbox"
+                checked={this.state.acousticness[0]}
+                onChange={val => {
+                    console.log(this.state.acousticness)
+                    this.setState({acousticness: [!this.state.acousticness[0], this.state.acousticness[1],this.state.acousticness[2]]})} }/>
+            </label>
+            <br />
+            <label>
+              NThe dancability level:
+              <input
+                name="The dancability"
+                type="checkbox"
+                value={this.state.danceability[1]}
+                onChange={val => {
+                    this.setState({danceability: [!this.state.danceability[0], this.state.danceability[1],this.state.danceability[2]]})} }/>
+            </label>
+            <br />
+            <label>
+              The energy level:
+              <input
+                name="The Energy Level"
+                type="checkbox"
+                value={this.state.energy[1]}
+                onChange={val => {
+                    this.setState({energy: [!this.state.energy[0], this.state.energy[1],this.state.energy[2]]})} }/>
+            </label>
+            <br />
+            <label>
+              The level of instrumentalism vs vocals:
+              <input
+                name="the level of instrumentalism/vocals"
+                type="checkbox"
+                value={this.state.instrumentalness[1]}
+                onChange={val => {
+                    this.setState({instrumentalness: [!this.state.instrumentalness[0], this.state.instrumentalness[1],this.state.instrumentalness[2]]})} }/>
+            </label>
+            <br />
+            <label>
+              The loudness level:
+              <input
+                name="the level of loudness"
+                type="checkbox"
+                value={this.state.loudness[1]}
+                onChange={val => {
+                    this.setState({loudness: [!this.state.loudness[0], this.state.loudness[1],this.state.loudness[2]]})} }/>
+            </label>
+            <br />
+            <label>
+              The happiness level:
+              <input
+                name="the happiness level"
+                type="checkbox"
+                value={this.state.valence[1]}
+                onChange={val => {
+                    this.setState({valence: [!this.state.valence[0], this.state.valence[1],this.state.valence[2]]})} }/>
+            </label>
+            <br />
+            <label>
+            The level of tempo:
+              <input
+                name="the level of tempo"
+                type="checkbox"
+                value={this.state.tempo[1]}
+                onChange={val => {
+                    this.setState({tempo: [!this.state.tempo[0], this.state.tempo[1],this.state.tempo[2]]})} }/>
+            </label>
+    
+          </form>
+        )
+    }
+    // handleInputChange = 
 
     render() {
         return (
@@ -40,18 +130,7 @@ import ReactDOM from 'react-dom';
             <Music url={this.state.song1play} image={this.state.pic1}></Music>
             <Music url={this.state.song2play} image={this.state.pic2}></Music>
             <Music url={this.state.song3play} image={this.state.pic3}></Music>
-            <label>
-                    <Checkbox
-                      checked={this.state.checked}
-                      onChange={value => {
-                        console.log(value)
-                        this.setState({checked:!this.state.checked})
-                      }}
-                      disabled={this.state.disabled}
-                    />
-                    &nbsp; controlled checked rc-checkbox
-            </label>
-      
+
             
           </>
         )}

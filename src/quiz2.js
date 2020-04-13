@@ -46,28 +46,36 @@ import ReactDOM from 'react-dom';
       // this.handleSubmit = this.handleSubmit.bind(this);
     }
     
-    checkboxes1 = () => {
+    checkboxes = songid => {
         return(
+            <>
+            <h3>
+                Currently, what are you favorite features about this song?
+            </h3>
             <form>
             <label>
               Is going:
               <input
                 name="The Acousticness Level"
                 type="checkbox"
-                checked={this.state.acousticness[0]}
-                onChange={val => {
-                    console.log(this.state.acousticness)
-                    this.setState({acousticness: [!this.state.acousticness[0], this.state.acousticness[1],this.state.acousticness[2]]})} }/>
+                checked={this.state.acousticness[songid]}
+                onChange={val => {                    
+                    this.setState(
+                        {acousticness:this.state.acousticness.map((rate, index) => 
+                            index === songid  ? !rate : rate
+                          )})} }/>
             </label>
             <br />
             <label>
-              NThe dancability level:
+              The dancability level:
               <input
                 name="The dancability"
                 type="checkbox"
-                value={this.state.danceability[1]}
+                value={this.state.danceability[songid]}
                 onChange={val => {
-                    this.setState({danceability: [!this.state.danceability[0], this.state.danceability[1],this.state.danceability[2]]})} }/>
+                    this.setState({danceability: this.state.danceability.map((rate, index) => 
+                        index === songid  ? !rate : rate
+                      )})} }/>
             </label>
             <br />
             <label>
@@ -75,9 +83,11 @@ import ReactDOM from 'react-dom';
               <input
                 name="The Energy Level"
                 type="checkbox"
-                value={this.state.energy[1]}
+                value={this.state.energy[songid]}
                 onChange={val => {
-                    this.setState({energy: [!this.state.energy[0], this.state.energy[1],this.state.energy[2]]})} }/>
+                    this.setState({energy: this.state.energy.map((rate, index) => 
+                        index === songid  ? !rate : rate
+                      )})} }/>
             </label>
             <br />
             <label>
@@ -85,9 +95,11 @@ import ReactDOM from 'react-dom';
               <input
                 name="the level of instrumentalism/vocals"
                 type="checkbox"
-                value={this.state.instrumentalness[1]}
+                value={this.state.instrumentalness[songid]}
                 onChange={val => {
-                    this.setState({instrumentalness: [!this.state.instrumentalness[0], this.state.instrumentalness[1],this.state.instrumentalness[2]]})} }/>
+                    this.setState({instrumentalness: this.state.instrumentalness.map((rate, index) => 
+                        index === songid  ? !rate : rate
+                      )})} }/>
             </label>
             <br />
             <label>
@@ -95,9 +107,11 @@ import ReactDOM from 'react-dom';
               <input
                 name="the level of loudness"
                 type="checkbox"
-                value={this.state.loudness[1]}
+                value={this.state.loudness[songid]}
                 onChange={val => {
-                    this.setState({loudness: [!this.state.loudness[0], this.state.loudness[1],this.state.loudness[2]]})} }/>
+                    this.setState({loudness: this.state.loudness.map((rate, index) => 
+                        index === songid  ? !rate : rate
+                      )})} }/>
             </label>
             <br />
             <label>
@@ -105,9 +119,11 @@ import ReactDOM from 'react-dom';
               <input
                 name="the happiness level"
                 type="checkbox"
-                value={this.state.valence[1]}
+                value={this.state.valence[songid]}
                 onChange={val => {
-                    this.setState({valence: [!this.state.valence[0], this.state.valence[1],this.state.valence[2]]})} }/>
+                    this.setState({valence: this.state.valence.map((rate, index) => 
+                        index === songid  ? !rate : rate
+                      )})} }/>
             </label>
             <br />
             <label>
@@ -115,15 +131,21 @@ import ReactDOM from 'react-dom';
               <input
                 name="the level of tempo"
                 type="checkbox"
-                value={this.state.tempo[1]}
+                value={this.state.tempo[songid]}
                 onChange={val => {
-                    this.setState({tempo: [!this.state.tempo[0], this.state.tempo[1],this.state.tempo[2]]})} }/>
+                    this.setState({tempo: this.state.tempo.map((rate, index) => 
+                        index === songid  ? !rate : rate
+                      )})} }/>
             </label>
     
           </form>
+          </>
         )
     }
 
+    calculate = () => {
+
+    }
             
 
     renderRating = (songid) => {
@@ -157,18 +179,26 @@ import ReactDOM from 'react-dom';
               <div style={columnStyle}>
                 <Music url={this.state.song1play} image={this.state.pic1}>
                   {this.renderRating(1)}
-                {this.checkboxes1()}
+                {this.checkboxes(0)}
                 </Music></div>
               <div style={columnStyle}>
                 <Music url={this.state.song2play} image={this.state.pic2}>
                   {this.renderRating(2)}
-                {/* insert form here */}
+                {this.checkboxes(1)}
                 </Music></div>
               <div style={columnStyle}>
                 <Music url={this.state.song3play} image={this.state.pic3}>
                   {this.renderRating(3)}
-                {/* insert form here */}
+                {this.checkboxes(2)}
                 </Music></div>
+          </div>
+          <div style={{
+              ...rowStyle,
+              justifyContent: 'center'
+          }}>
+              <button onClick={this.calculate()}>
+                  Get me Playlist Please!
+              </button>
           </div>
           </>
         )}

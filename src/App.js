@@ -51,7 +51,7 @@ class LoginView extends Component {
       <div>
         <div style={divStyle}><h1>Spotify Music Selector</h1></div>
         <div style={divStyle}><h3>We'll pick a song or curate a playlist for you based on how you're feeling.</h3></div>
-        <div style={divStyle}><label>Log in with Spotify and we'll select from your own music library. Or use anonymously and we'll select from our database of all kinds of music.</label></div>
+        <div style={divStyle}><label>Log in with Spotify and we'll select from your own music library.<br />Or use anonymously and we'll select from our database of all kinds of music.</label></div>
         <div style={{
           height: '100%',
           width: '100%',

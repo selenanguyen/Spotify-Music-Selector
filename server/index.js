@@ -32,7 +32,7 @@ var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
  */
 var serverName = "localhost";
 var portNumber = 3306;
-var userName = 'root', password = '';
+var userName = 'root', password = 'Selenaxmimi0314!';
 var db = "spotifyApp";
 var userSpotifyId;
 
@@ -69,6 +69,34 @@ const getUserSongsFromDatabase = () => {
 
 const getPlaylists = () => {
   let sql = `CALL get_playlists(${userSpotifyId})`
+  return connection.promise().query(sql).then((response) =>{
+    return response;
+  }).catch((e) => {
+    console.log("ERROR:", e);
+  });
+}
+
+const getPlaylistTracks = (playlistId) => {
+  console.log("GETTING PLAYLISTS FOR PLAYLIST " + playlistId);
+  let sql = `CALL get_playlist_songs('${playlistId}')`
+  return connection.promise().query(sql).then((response) =>{
+    console.log(response);
+    return response;
+  }).catch((e) => {
+    console.log("ERROR:", e);
+  });
+}
+
+const updatePlaylistField = async (id, field, value) => {
+  console.log("updating " + id + " playlist " + field + " to " + value)
+  let sql = `UPDATE playlists
+    SET ${field} = '${value}' WHERE playlist_id = '${id}';`
+  return connection.promise().query(sql).then((resp) => {
+    return true;
+  }).catch(e => {
+    console.log(e)
+    return false;
+  });
 }
 
 /**
@@ -315,14 +343,18 @@ const addUserPlaylistsToDatabase = async () => {
  * Returns whether the current user is already in the database
  */
 const isUserInDatabase = async () => {
-  return getUserId().then((id) => {
+  return getUser().then(({ id, display_name }) => {
     return connection.promise().query(`SELECT user_id FROM users`).then(([rows,fields]) => {
       const userIds = rows.map((row) => row.user_id);
       if (userIds.includes(id)) {
+        console.log("User " + id + " in database")
+        userSpotifyId = id;
         return true;
       }
       else {
-        this.userSpotifyId = id;
+        console.log("User not in database")
+        addUser(id, display_name);
+        userSpotifyId = id;
         return false;
       }
     })
@@ -369,11 +401,39 @@ app.get('/api/getUser', (req, res) => {
 })
 
 app.get('/api/getPlaylists', (req, res) => {
-  // res.setHeader('Content-Type', 'application/json');
-  // getUser().then((profile) => {
-  //   res.send(JSON.stringify(profile))
-  // })
+  res.setHeader('Content-Type', 'application/json');
+  getPlaylists().then(([ rows, fields ]) => {
+    console.log("ROWS:", rows, "FIELDS:", fields);
+    res.send(JSON.stringify({
+      rows: rows[0], fields: fields[0]
+    }));
+  })
 })
+
+app.get('/api/getPlaylistTracks', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  getPlaylistTracks(req.query.id).then(([ rows, fields ]) => {
+    console.log("ROWS:", rows, "FIELDS:", fields);
+    res.send(JSON.stringify({
+      rows: rows[0], fields: fields[0]
+    }));
+  })
+})
+
+app.get('/api/updatePlaylistField', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  if (!req.query.id || (!req.query.desc && !req.query.title)) {
+    console.log("Invalid args", req.query.id, req.query.title);
+    throw new Error("Invalid arguments for updating playlist field: " + req.query);
+  }
+  if (req.query.desc) {
+    res.send(JSON.stringify(updatePlaylistField(req.query.id, "playlist_description", req.query.desc)));
+  }
+  else {
+    res.send(JSON.stringify(updatePlaylistField(req.query.id, "playlist_name", req.query.title)));
+  }
+})
+
 
 
 /**

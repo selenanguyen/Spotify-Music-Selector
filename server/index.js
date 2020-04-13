@@ -83,7 +83,6 @@ const getPlaylistTracks = (playlistId) => {
   console.log("GETTING PLAYLISTS FOR PLAYLIST " + playlistId);
   let sql = `CALL get_playlist_songs('${playlistId}')`
   return connection.promise().query(sql).then((response) =>{
-    console.log(response);
     return response;
   }).catch((e) => {
     console.log("ERROR:", e);
@@ -463,7 +462,7 @@ app.get('/api/getPlaylists', (req, res) => {
 app.get('/api/getPlaylistTracks', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   getPlaylistTracks(req.query.id).then(([ rows, fields ]) => {
-    console.log("ROWS:", rows, "FIELDS:", fields);
+    //console.log("ROWS:", rows, "FIELDS:", fields);
     res.send(JSON.stringify({
       rows: rows[0], fields: fields[0]
     }));

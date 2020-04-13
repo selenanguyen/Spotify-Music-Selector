@@ -45,15 +45,20 @@ export class QuizComponent extends Component {
   // }
 
   callGenerateSong = () => {
+    console.log("call generate song");
     if(this.state.isloading){
+      console.log("loading")
       return
     }
     this.setState({isloading:true})
+    console.log("set the state");
     fetch('http://localhost:3001/getRandomSong')
     .then((response) => {
+      console.log("received fetch");
       return response.json();
     })
     .then((track) => {
+      console.log("got data")
       let data = track.track
       console.log(data);
       this.setState({isloading:false,
@@ -73,9 +78,16 @@ export class QuizComponent extends Component {
   })
 }
 
-  sure = () => {return(<>
-  <h1> I know What I want (Only pick what you care about)</h1>
 
+
+  sure = () => {
+    const columnStyle = {
+      margin: '10px'
+    }
+    return(<>
+  <h1> I know What I want (Only pick what you care about)</h1>
+  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+  <div style={columnStyle}>
   <h5> Acousticness Level </h5>
   <Rating initialRating={this.state.acousticness} start={0} stop={10} onChange={value => {this.setState({acousticness:value})}}/>
 
@@ -87,7 +99,8 @@ export class QuizComponent extends Component {
 
   <h5> Instrumentalness </h5>
   <Rating initialRating={this.state.instrumentalness} start={0} stop={10} onChange={value => {this.setState({instrumentalness:value})}}/>
-
+  </div>
+  <div style={columnStyle}>
   <h5> Happiness Level </h5>
   <Rating initialRating={this.state.valence} start={0} stop={10} onChange={value => {this.setState({valence:value})}}/>
 
@@ -96,9 +109,11 @@ export class QuizComponent extends Component {
 
   <h5> Loudness </h5>
   <Rating initialRating={this.state.loudness} start={0} stop={10} onChange={value => {this.setState({loudness:value})}}/>
-
-  <h5> Finish Quiz </h5>{/* put call to server here and put state chance to song thing there */}
-  <button onClick={() => {this.callGenerateSong()}}> Help Me Finish</button>
+  </div></div>
+  <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
+  <div style={{ display: 'flex', justifyContent: 'center'}}><h5> Finish Quiz </h5></div>{/* put call to server here and put state chance to song thing there */}
+  <div style={{ display: 'flex', justifyContent: 'center'}}><button onClick={() => {this.callGenerateSong()}}> Help Me Finish</button></div>
+  </div>
 </>)}
 
 
@@ -114,9 +129,9 @@ songpicker = () => {
 
   render() {
     return (
-      <>
+      <div style={{ display: "inline-block" }}>
       {this.state.isSure && this.sure()}
       {this.state.hasSongsToDisplay && this.songpicker()}
-      </>
+      </div>
     )}
 }

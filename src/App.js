@@ -82,8 +82,9 @@ class AnonymousView extends Component {
   }
 
   render() {
-    return <><h1>this is an anonymous user</h1>
-      {this.renderQuiz()}</>
+    // return <div style={{ display: "inline-block" }}><h1>this is an anonymous user</h1>
+    //   {this.renderQuiz()}</div>
+    return this.renderQuiz()
   }
 }
 

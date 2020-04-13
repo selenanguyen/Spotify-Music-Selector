@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { PlaylistComponent } from "./PlaylistComponent";
 import './App.css';
 const moment = require('moment');
 
@@ -67,9 +68,9 @@ export class ViewPlaylists extends Component {
     .then((response) => response.json())
     .then((jsonresponse) => {
       const { rows, fields } = jsonresponse;
-      rows.forEach((row) => {
-        row["date_created"] = moment(row["date_created"]).utc().format("YYYY-MM-DD");
-      });
+      // rows.forEach((row) => {
+      //   row["date_created"] = moment(row["date_created"]).utc().format("YYYY-MM-DD");
+      // });
       //rows[date_created] = moment(rows.date_created).utc().format("YYYY-MM-DD");
       //console.log(rows.date_created, moment(rows.date_created).utc().format("YYYY-MM-DD"));
       return rows;
@@ -112,11 +113,15 @@ export class ViewPlaylists extends Component {
   }
 
   removePlaylist(id) {
-    fetch(`api/removePlaylist?id=${encodeURIComponent(id)}`)
-    .then(this.setState({
+    // fetch(`api/removePlaylist?id=${encodeURIComponent(id)}`)
+    // .then(
+    console.log("removing playlist " + id + " in parent")
+    this.setState({
       playlists: this.state.playlists.reduce((prevValue, curValue, index) => 
         curValue.playlist_id === id ? prevValue : prevValue.concat(curValue), [])
-    }))
+    })
+    console.log("new list: ",this.state.playlists);
+    //)
   }
 
   isPlaylistInputFieldUpdated(playlistId, field) {
@@ -203,58 +208,60 @@ export class ViewPlaylists extends Component {
     return <div style={tablesLayout}>
     <h2>Playlists we've curated for you.</h2>
     <div><button style={backToProfileButtonStyle} onClick={this.props.navToProfile}>Back to profile</button></div>
-    {this.state.playlists.map((playlist) => {
-      if (!playlist.tracks || !playlist.playlist_id) {
-        console.log('UNDEFINED TRACKS FOR PLAYLIST', playlist, playlist["tracks"]);
-        console.log("UNDEFINED ID FOR PLAYLIST", playlist, playlist.playlist_id);
-      }
-      const id = playlist.playlist_id;
-      return <div>
-        <div style={{
-          textAlign: 'center'
-        }}>
-          <form style={{ textAlign: 'left' }}><label style={labelStyle}>name: 
-            <input style={{ marginLeft: '10px' }} type="text" value={this.state.playlistInputFields[id].title} 
-              onChange={(e) => this.onInputChange(id, e.target.value, "title")}
-              id={`${id} name`} /></label>
-              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" value="update playlist name"
-                onClick={() => this.onUpdateInputToDatabase(id, "title")}
-                disabled={!this.isPlaylistInputFieldUpdated(id, "title")} />
-              <br />
-            <label style={labelStyle}>description: 
-            <input type="text" style={{ marginLeft: '10px', marginTop: '10px' }} 
-                value={this.state.playlistInputFields[id].desc}
-                id={`${id} desc`} 
-                onChange={(e) => this.onInputChange(id, e.target.value, "desc")}
-            /></label>
-              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" value="update playlist description"
-                onClick={() => this.onUpdateInputToDatabase(id, "desc")}
-                disabled={!this.isPlaylistInputFieldUpdated(id, "desc")} />
-              <br />
-          </form>
-        </div>
-        <table style={tableStyle}>
-          <thead><tr>
-          {Object.keys(this.trackFields).map((field) => 
-            <th style={thstyle}>{field}</th>
-          )}
-          </tr>
-          </thead>
-          <tbody>
-          {playlist.tracks.map((track) =>
-            <tr>
-              {Object.values(this.trackFields).map((field) => {
-              return <td style={cellStyle}>
-                {track[field]}
-              </td>
-              })}
-            </tr>
-          )}
-          </tbody>
-        </table>
-        <button style={buttonStyle} onClick={() => this.removePlaylist(id)}>Remove playlist</button>
-      </div>
-  })}
+    {this.state.playlists.map((playlist) => <PlaylistComponent playlist={playlist} onRemovePlaylist={this.removePlaylist} />
+    //{
+      // if (!playlist.tracks || !playlist.playlist_id) {
+      //   console.log('UNDEFINED TRACKS FOR PLAYLIST', playlist, playlist["tracks"]);
+      //   console.log("UNDEFINED ID FOR PLAYLIST", playlist, playlist.playlist_id);
+      // }
+  //     const id = playlist.playlist_id;
+  //     return <div>
+  //       <div style={{
+  //         textAlign: 'center'
+  //       }}>
+  //         <form style={{ textAlign: 'left' }}><label style={labelStyle}>name: 
+  //           <input style={{ marginLeft: '10px' }} type="text" value={this.state.playlistInputFields[id].title} 
+  //             onChange={(e) => this.onInputChange(id, e.target.value, "title")}
+  //             id={`${id} name`} /></label>
+  //             <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" value="update playlist name"
+  //               onClick={() => this.onUpdateInputToDatabase(id, "title")}
+  //               disabled={!this.isPlaylistInputFieldUpdated(id, "title")} />
+  //             <br />
+  //           <label style={labelStyle}>description: 
+  //           <input type="text" style={{ marginLeft: '10px', marginTop: '10px' }} 
+  //               value={this.state.playlistInputFields[id].desc}
+  //               id={`${id} desc`} 
+  //               onChange={(e) => this.onInputChange(id, e.target.value, "desc")}
+  //           /></label>
+  //             <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" value="update playlist description"
+  //               onClick={() => this.onUpdateInputToDatabase(id, "desc")}
+  //               disabled={!this.isPlaylistInputFieldUpdated(id, "desc")} />
+  //             <br />
+  //         </form>
+  //       </div>
+  //       <table style={tableStyle}>
+  //         <thead><tr>
+  //         {Object.keys(this.trackFields).map((field) => 
+  //           <th style={thstyle}>{field}</th>
+  //         )}
+  //         </tr>
+  //         </thead>
+  //         <tbody>
+  //         {playlist.tracks.map((track) =>
+  //           <tr>
+  //             {Object.values(this.trackFields).map((field) => {
+  //             return <td style={cellStyle}>
+  //               {track[field]}
+  //             </td>
+  //             })}
+  //           </tr>
+  //         )}
+  //         </tbody>
+  //       </table>
+  //       <button style={buttonStyle} onClick={() => this.removePlaylist(id)}>Remove playlist</button>
+  //     </div>
+  // }
+  )}
     </div>
   }
 }

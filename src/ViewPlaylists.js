@@ -14,6 +14,7 @@ export class ViewPlaylists extends Component {
     this.onUpdateInputToDatabase = this.onUpdateInputToDatabase.bind(this);
     this.isPlaylistInputFieldUpdated = this.isPlaylistInputFieldUpdated.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
+    this.removePlaylist = this.removePlaylist.bind(this);
     this.state = {
       playlists: null,
       playlistInputFields: {},
@@ -28,6 +29,11 @@ export class ViewPlaylists extends Component {
         const { rows, fields } = jsonresponse;
         let newRows = [];
         let playlistInputFields = {};
+        if (!rows.length) {
+          this.setState({
+            playlists: []
+          })
+        }
         rows.forEach((row, index) => {
           this.fetchPlaylistTracks(row.playlist_id)
           .then((tracks) => {
@@ -51,7 +57,7 @@ export class ViewPlaylists extends Component {
               console.log(this.state.originalInputState);
             }
           })
-        })
+        });
       })
     }
   }
@@ -105,6 +111,14 @@ export class ViewPlaylists extends Component {
     })
   }
 
+  removePlaylist(id) {
+    fetch(`api/removePlaylist?id=${encodeURIComponent(id)}`)
+    .then(this.setState({
+      playlists: this.state.playlists.reduce((prevValue, curValue, index) => 
+        curValue.playlist_id === id ? prevValue : prevValue.concat(curValue), [])
+    }))
+  }
+
   isPlaylistInputFieldUpdated(playlistId, field) {
     console.log(this.state.originalInputState, playlistId, field);
     if (!this.state.originalInputState) {
@@ -137,9 +151,29 @@ export class ViewPlaylists extends Component {
       //width: '10%'
     }
 
+    const buttonStyle = {
+      color: 'white',
+      border: 'none',
+      margin: '15px',
+      //border: '1px solid #191414',
+      backgroundColor: '#191414',
+      borderRadius: '5px',
+      padding: '10px 20px',
+      textAlign: 'center',
+      marginTop: '10px',
+      marginBottom: '30px',
+      textDecoration: 'none',
+      display: 'inline-block',
+      fontSize: '13px'
+    }
+
     const labelStyle = {
       //marginTop: '-10px',
       marginBottom: '10px'
+    }
+
+    const submitStyle = {
+      borderRadius: '2px'
     }
 
     const tableStyle = {
@@ -150,8 +184,7 @@ export class ViewPlaylists extends Component {
       borderWidth: '1px',
       borderRadius: '5px',
       //padding: '15px',
-      marginTop: '15px',
-      marginBottom: '30px'
+      marginTop: '15px'
     }
 
     if (!this.state.playlists) {
@@ -172,20 +205,20 @@ export class ViewPlaylists extends Component {
         <div style={{
           textAlign: 'center'
         }}>
-          <form><label style={labelStyle} for={`${id} name`}>name: 
-            <input type="text" value={this.state.playlistInputFields[id].title} 
+          <form style={{ textAlign: 'left' }}><label style={labelStyle} for={`${id} name`}>name: 
+            <input style={{ marginLeft: '10px' }} type="text" value={this.state.playlistInputFields[id].title} 
               onChange={(e) => this.onInputChange(id, e.target.value, "title")}
               id={`${id} name`} /></label>
-              <input type="submit" onClick={() => this.onUpdateInputToDatabase(id, "title")}
+              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" onClick={() => this.onUpdateInputToDatabase(id, "title")}
                 disabled={!this.isPlaylistInputFieldUpdated(id, "title")} />
               <br />
             <label style={labelStyle} for={`${id} desc`}>description: 
-            <input type="text" 
+            <input type="text" style={{ marginLeft: '10px', marginTop: '10px' }} 
               value={this.state.playlistInputFields[id].desc}
               id={`${id} desc`} 
               onChange={(e) => this.onInputChange(id, e.target.value, "desc")}
               /></label>
-              <input type="submit" onClick={() => this.onUpdateInputToDatabase(id, "desc")}
+              <input style={{ marginLeft: '10px', ...submitStyle }} type="submit" onClick={() => this.onUpdateInputToDatabase(id, "desc")}
                 disabled={!this.isPlaylistInputFieldUpdated(id, "desc")} />
               <br />
           </form>
@@ -209,6 +242,7 @@ export class ViewPlaylists extends Component {
           )}
           </tbody>
         </table>
+        <button style={buttonStyle} onClick={() => this.removePlaylist(id)}>Remove playlist</button>
       </div>
   })}
     </div>

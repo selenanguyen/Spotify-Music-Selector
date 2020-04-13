@@ -62,10 +62,10 @@ class LoginView extends Component {
         }}><a href="http://localhost:3001/login" style={{
           ...buttonStyle, ...spotifyGreen
         }} onClick={() => this.props.login(false)}>Log in with Spotify</a>
-        <a href="http://localhost:3000/#login=true" style={{
+        <button style={{
           ...buttonStyle,
           ...spotifyBlack
-        }} onClick={() => this.props.login(true)}>Use anonymously</a></div>
+        }} onClick={() => this.props.login(true)}>Use anonymously</button></div>
         
       </div>
     )
@@ -78,11 +78,17 @@ class App extends Component {
       isLoggedIn: false,
       isAnonymous: null
     };
+    this.login = this.login.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     // if (this.getHashParams().token) {
     //   this.getSongs();
     // }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.state.isLoggedIn != nextState.isLoggedIn
+      || this.state.isAnonymous != nextState.isAnonymous;
   }
 
   getHashParams = () => {

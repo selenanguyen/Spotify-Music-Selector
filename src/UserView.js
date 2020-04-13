@@ -125,12 +125,12 @@ export class UserView extends Component {
             <div style={rightAlignStyle}><dt>Subscription level</dt></div>
             <div style={rightAlignStyle}><dt>Spotify URI</dt></div>
             <div style={rightAlignStyle}><dt>Country</dt></div>
-            <div style={rightAlignStyle}><a href="http://localhost:3001/login" style={{
+            <div style={rightAlignStyle}><button style={{
           ...buttonStyle, ...selectMusicButtonStyle
         }} onClick={() => this.setState({
           ...this.state,
           isGettingMusic: true
-        })}>Get music</a></div>
+        })}>Get music</button></div>
           </div>
           <div style={columnStyle}>
             <div style={leftAlignStyle}><dd>{this.state.userProfile.email}</dd></div>
@@ -138,14 +138,14 @@ export class UserView extends Component {
             <div style={leftAlignStyle}><dd>{this.state.userProfile.product}</dd></div>
             <div style={leftAlignStyle}><dd><a href={this.state.userProfile.uri}>{this.state.userProfile.uri}</a></dd>
             <div style={leftAlignStyle}><dd>{this.state.userProfile.country}</dd></div>
-            <div style={leftAlignStyle}><a href="http://localhost:3000/#login=true" style={{
+            <div style={leftAlignStyle}><button style={{
           ...buttonStyle,
           ...viewPlaylistsButtonStyle,
           marginLeft: '40px'
         }} onClick={() => this.setState({
           ...this.state,
           isViewingPlaylists: true
-        })}>View playlists</a></div>
+        })}>View playlists</button></div>
           </div>
         </div>
       </div>

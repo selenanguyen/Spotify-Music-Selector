@@ -67,6 +67,14 @@ const getUserSongsFromDatabase = () => {
   return connection.promise().query(sql);
 }
 
+const removePlaylist = (id) => {
+  let sql = `DELETE FROM playlists WHERE playlist_id = '${id}';`
+  return connection.promise().query(sql).then((response) => true)
+  .catch((e) => {
+    console.log("ERROR REMOVING PLAYLIST " + id + ":", e);
+  })
+}
+
 const getPlaylists = () => {
   let sql = `CALL get_playlists(${userSpotifyId})`
   return connection.promise().query(sql).then((response) =>{
@@ -387,6 +395,16 @@ app.get('/api/greeting', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify({ greeting: `Hello ${name}!` }));
 });
+
+app.get('/api/removePlaylist', (req, res) => {
+  const id = req.query.id;
+  res.setHeader('Content-Type', 'application/json');
+  if (!id) {
+    console.log("No id given: ", id);
+    throw new Error("Invalid argument for remove playlist:", id);
+  }
+  removePlaylist(id).then((resp) => res.send(JSON.stringify(resp)));
+})
 
 app.get('/api/getSongs', (req, res) => {
   res.setHeader('Content-Type', 'application/json');

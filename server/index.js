@@ -662,11 +662,40 @@ app.get('/getRandomSong', function(req, res) {
   let track = 0
   res.setHeader('Content-Type', 'application/json');
   // refresh()
-  spotifyApi.setAccessToken(access_token);
-  spotifyApi.getTracks(['0725YWm6Z0TpZ6wrNk64Eb','07oiSjg6TiehyOS3pRJo0l','08xsXR637CEqbxJmpFcuSA']).then(tracks => {
+  let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
+   WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
+  connection.promise().query(sql).then(([rows, fields]) => {
+    // res.send(JSON.stringify({
+    //   rows: rows,
+    //   fields: fields
+    // }))
+    return rows
+  })
+  .then(rows => {
+    spotifyApi.setAccessToken(access_token);
+    let findTrack = (id, spotifyTracks) => {
+      return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
+    }
+    console.log("Rows", rows);
+    let ids = rows.map(track => track.song_id);
+    console.log("Random track ids:", ids);
+    spotifyApi.getTracks(ids).then(tracks => {
       console.log(tracks.body.tracks)
-      track = tracks.body.tracks
-  }).then(() => res.send(JSON.stringify({ track }))).catch(e => console.log(e))
+      track = tracks.body.tracks;
+      let newTracks = rows.map((dbTrack) => {
+        return {
+          ...dbTrack,
+          ...findTrack(dbTrack.song_id, tracks.body.tracks)
+        }
+      });
+      console.log("Sending tracks", newTracks)
+      res.send(JSON.stringify({ tracks: newTracks }));
+  }).catch(e => console.log(e))
+  })
+  .catch(e => {
+    console.log(e);
+  });
+  
   
 }
 )

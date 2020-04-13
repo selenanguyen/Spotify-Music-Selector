@@ -45,22 +45,16 @@ export class QuizComponent extends Component {
   // }
 
   callGenerateSong = () => {
-    console.log("call generate song");
     if(this.state.isloading){
-      console.log("loading")
       return
     }
     this.setState({isloading:true})
-    console.log("set the state");
     fetch('http://localhost:3001/getRandomSong')
     .then((response) => {
-      console.log("received fetch");
       return response.json();
     })
     .then((track) => {
-      console.log("got data")
-      let data = track.track
-      console.log(data);
+      let data = track.tracks
       this.setState({isloading:false,
         song1id: data[0].id,
         song1play: data[0].preview_url,

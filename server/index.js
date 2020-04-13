@@ -37,22 +37,9 @@ var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
 // var userSpotifyId;
 var connection;
 var userSpotifyId;
-<<<<<<< HEAD
 var access_token;
 var refresh_token;
 
-var connection = mysql.createConnection({
-  host     : serverName,
-  user     : userName,
-  password : password,
-  database : db,
-  port     : portNumber
-});
-connection.connect((err) => {
-  console.log(err);
-});
-=======
->>>>>>> f11ac558af0549160a91b46943bf97d772469b8a
 var spotifyApi = new SpotifyWebApi();
 
 // Error numbers we can ignore and skip adding to the database

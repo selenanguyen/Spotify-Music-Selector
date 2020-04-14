@@ -4,6 +4,7 @@ const mysql = require('mysql2');//2/promise');
 const SpotifyWebApi = require('spotify-web-api-node');
 const moment = require('moment');
 const pino = require('express-pino-logger')();
+const _ = require('lodash');
 
 
 var request = require('request'); // "Request" library
@@ -95,6 +96,36 @@ const getPlaylistTracks = (playlistId) => {
     console.log("ERROR:", e);
   });
 }
+
+  const newPlaylistId = "hiiiii thsdjasodjoiereeee";
+  const defaultDescription = `Playlist created on ${moment().format("YYYY-MM-DD")}`;
+
+  let numSongs = 25, acousticness = 5.0, danceabilityWeight = 5.0,
+    acousticnessWeight = 5.0, danceability = 5.0, energy = 5.0, energyWeight = 5.0, valence = 5.0,
+    valenceWeight = 5.0, instrumentalness = 5.0, instrumentalnessWeight = 5.0,
+    loudness = 5.0, loudnessWeight = 5.0, tempo = 5.0, tempoWeight = 5.0;
+  // const { numSongs, acousticness, acousticnessWeight, danceability, 
+  //   danceabilityWeight, energy, energyWeight, instrumentalness,
+  //   instrumentalnessWeight, loudness, loudnessWeight, valence, 
+  //   valenceWeight, tempo, tempoWeight } = body;
+  //call procedure that creates playlist (with this id, and user)
+  let sql = `CALL add_playlist("${userSpotifyId}","${newPlaylistId}","My New Playlist","${defaultDescription}")`;
+  connection.promise().query(sql).then(r => {
+    sql = `CALL generate_playlist("${userSpotifyId}","${newPlaylistId}",
+      "${numSongs}",
+      "${acousticness}","${acousticnessWeight}",
+      "${danceability}","${danceabilityWeight}","${energy}","${energyWeight}",
+      "${instrumentalness}","${instrumentalnessWeight}",
+      "${loudness}","${loudnessWeight}","${valence}","${valenceWeight}",
+      "${tempo}","${tempoWeight}")`;
+    connection.promise().query(sql).then(r => {
+      getPlaylistTracks(newPlaylistId).then(([ rows, fields ]) => {
+        console.log('playlist id', newPlaylistId, 'tracks', rows[0]);
+      })
+    })
+  }).catch(e => console.log("ERROR IN SERVER", e));
+
+
 
 // getPlaylistTracks("playlist1").then((response) => {
 //   const [ rows, fields ] = response;

@@ -86,8 +86,8 @@ export class QuizComponent extends Component {
       return response.json();
     })
     .then((track) => {
-      // let data = track.tracks
-      console.log(data)
+       let data = track.tracks
+     // console.log(data)
     //   this.setState({isloading:false,
     //     songData:data,
     //     hasSongsToDisplay: true,

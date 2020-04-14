@@ -712,8 +712,7 @@ app.get('/genPlaylist', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   // generate unique id
   const body = req.query;
-  console.log("BODY", req.body)
-  const newPlaylistId = _.uniqueId();
+  const newPlaylistId = new Date().getUTCMilliseconds().toString();
   const defaultDescription = `Playlist created on ${moment().format("YYYY-MM-DD")}`;
   const { numSongs, acousticness, acousticnessWeight, danceability, 
     danceabilityWeight, energy, energyWeight, instrumentalness,
@@ -721,21 +720,24 @@ app.get('/genPlaylist', function(req, res) {
     valenceWeight, tempo, tempoWeight } = body;
   let sql = `CALL add_playlist("${userSpotifyId}","${newPlaylistId}","My New Playlist","${defaultDescription}")`;
   connection.promise().query(sql).then(r => {
+    console.log("RESPONSE FROM SQL");
     sql = `CALL generate_playlist("${userSpotifyId}","${newPlaylistId}",
-      "${numSongs}",
-      "${acousticness}","${acousticnessWeight}",
-      "${danceability}","${danceabilityWeight}","${energy}","${energyWeight}",
-      "${instrumentalness}","${instrumentalnessWeight}",
-      "${loudness}","${loudnessWeight}","${valence}","${valenceWeight}",
-      "${tempo}","${tempoWeight}")`;
+      "${numSongs.trim()}",
+      "${acousticness.trim()}","${acousticnessWeight.trim()}",
+      "${danceability.trim()}","${danceabilityWeight.trim()}","${energy.trim()}","${energyWeight.trim()}",
+      "${instrumentalness.trim()}","${instrumentalnessWeight.trim()}",
+      "${loudness.trim()}","${loudnessWeight.trim()}","${valence.trim()}","${valenceWeight.trim()}",
+      "${tempo.trim()}","${tempoWeight.trim()}")`;
     connection.promise().query(sql).then(r => {
+      console.log("response from generate_playlist");
       getPlaylistTracks(newPlaylistId).then(([ rows, fields ]) => {
+        console.log("77777777777777777777")
         res.send(JSON.stringify({
           playlist_id: newPlaylistId,
           tracks: rows[0]
         }))
       })
-    })
+    }).catch(e => console.log("ERROR IN GENERATE_PLAYLIST", e))
   }).catch(e => console.log("ERROR IN SERVER", e));
   //uses shit ton of inuts to call generate playlist
   // connection.promise().query(sql).then(r => {

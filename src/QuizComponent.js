@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Rating from 'react-rating';
 import {QuizPart2} from './quiz2.js';
-
+import { PlaylistComponent } from "./PlaylistComponent";
 
 export class QuizComponent extends Component {
   constructor(props) {
@@ -29,8 +29,8 @@ export class QuizComponent extends Component {
 
       songData:{},
 
-
-      checked:false
+      finalData:null,
+      final:false
 
     };
     // this.handleChange = this.handleChange.bind(this);
@@ -64,7 +64,7 @@ export class QuizComponent extends Component {
       loudnessWeight: this.state.loudnessWeight,
       valenceWeight: this.state.valenceWeight,
       tempoWeight: this.state.tempoWeight,
-      numbersongs:this.props.songCount
+      numSongs:this.props.songCount
     })
   }
 
@@ -90,31 +90,29 @@ export class QuizComponent extends Component {
 }
 
    generatePlaylist = scoresAndWeights => {
+     const { numSongs, acousticness, acousticnessWeight, danceability, danceabilityWeight, energy, energyWeight, 
+      instrumentalness, instrumentalnessWeight, loudness, loudnessWeight, valence, valenceWeight, tempo, tempoWeight } = scoresAndWeights;
+      console.log(scoresAndWeights);
     if(this.state.isloading){
       return
     }
     this.setState({isloading:true})
-    console.log("posting...", scoresAndWeights);
-    fetch('/api/genPlaylist', {
-      method: 'POST', 
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(scoresAndWeights),
-    })
+    fetch(`http://localhost:3001/genPlaylist?numSongs=${encodeURIComponent(numSongs)}&acousticness=${encodeURIComponent(acousticness)}&acousticnessWeight=${encodeURIComponent(acousticnessWeight)}
+    &danceability=${encodeURIComponent(danceability)}&danceabilityWeight=${encodeURIComponent(danceabilityWeight)}&energy=${encodeURIComponent(energy)}&energyWeight=${encodeURIComponent(energyWeight)}&instrumentalness=${encodeURIComponent(instrumentalness)}
+    &instrumentalnessWeight=${encodeURIComponent(instrumentalnessWeight)}&loudness=${encodeURIComponent(loudness)}&loudnessWeight=${encodeURIComponent(loudnessWeight)}&valence=${encodeURIComponent(valence)}&valenceWeight=${encodeURIComponent(valenceWeight)}
+    &tempo=${encodeURIComponent(tempo)}&tempoWeight=${encodeURIComponent(tempoWeight)}`)
     .then((response) => {
-      console.log("response");
+      console.log(response)
       return response.json();
     })
-    .then((track) => {
+    .then((playlist) => {
       // let data = track.tracks
-      console.log(track)
-    //   this.setState({isloading:false,
-    //     songData:data,
-    //     hasSongsToDisplay: true,
-    //     isSure:false,
+      console.log(playlist)
+      this.setState({isloading:false,
+        finalData:playlist,
+        final:true
 
-    // })
+    })
   })
    }
 
@@ -194,6 +192,14 @@ export class QuizComponent extends Component {
 
 
   render() {
+    if(this.state.final){
+      return (<>
+        <h3>Here is your result! Enjoy your new playlist.</h3>
+        <PlaylistComponent playlist={this.state.finalData} />
+      </>)
+      
+    }
+
     return (
       <div style={{ display: "inline-block" }}>
         {!this.props.isSure && !this.state.hasSongsToDisplay && this.callGenerateSong()}

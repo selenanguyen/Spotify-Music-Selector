@@ -96,7 +96,7 @@ export class ViewPlaylists extends Component {
     //   .then(response => response.json())
     //   .then(state => this.setState(state));
 
-    fetch(`api/updatePlaylistField?id=${encodeURIComponent(playlistId)}&${field}=${encodeURIComponent(this.state.playlistInputFields[playlistId][field])}`)
+    fetch(`/api/updatePlaylistField?id=${encodeURIComponent(playlistId)}&${field}=${encodeURIComponent(this.state.playlistInputFields[playlistId][field])}`)
     .then((response) => response.json())
     .then((jsonresponse) => {
       this.setState({

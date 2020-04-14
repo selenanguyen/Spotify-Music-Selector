@@ -116,6 +116,7 @@ const removePlaylist = (id) => {
 const getPlaylists = () => {
   let sql = `CALL get_playlists(${userSpotifyId})`
   return connection.promise().query(sql).then((response) =>{
+    console.log("GET PLAYLISTS: ", response)
     return response;
   }).catch((e) => {
     console.log("ERROR:", e);

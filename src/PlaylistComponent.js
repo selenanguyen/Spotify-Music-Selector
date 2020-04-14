@@ -60,9 +60,7 @@ export class PlaylistComponent extends Component {
     })
   }
 
-  removePlaylist = () => {
-    console.log("REMOVING PLAYLIST " + this.playlist.playlist_id)
-    const id = this.playlist.playlist_id;
+  removePlaylist = (id) => {
     fetch(`api/removePlaylist?id=${encodeURIComponent(this.playlist.playlist_id)}`)
     .then(r => this.props.onRemovePlaylist(id));
   }
@@ -135,7 +133,6 @@ export class PlaylistComponent extends Component {
     }
     const id = this.playlist.playlist_id;
     const playlist = this.playlist;
-    console.log("RECEIVING DATE", playlist["date_created"]);
     return <div>
     <div style={{
       textAlign: 'left'
@@ -178,7 +175,7 @@ export class PlaylistComponent extends Component {
       )}
       </tbody>
     </table>
-    {this.props.onRemovePlaylist && <button style={buttonStyle} onClick={this.removePlaylist}>Remove playlist</button>}
+    {this.props.onRemovePlaylist && <button style={buttonStyle} onClick={() => this.removePlaylist(id)}>Remove playlist</button>}
   </div>
   }
 }

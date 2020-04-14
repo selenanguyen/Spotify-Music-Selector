@@ -7,7 +7,7 @@ import Music from './music.js';
 export class QuizPart2 extends Component {
   constructor(props) {
     super(props);
-    this.state = {
+    this.state = {  
       
       isloading:false,
         song1id: this.props.songData[0].id,
@@ -51,8 +51,7 @@ export class QuizPart2 extends Component {
           </h3>
           <form>
           <label>
-            Is going:
-            <input
+          <input
               name="The Acousticness Level"
               type="checkbox"
               checked={this.state.acousticness[songid]}
@@ -61,11 +60,11 @@ export class QuizPart2 extends Component {
                       {acousticness:this.state.acousticness.map((rate, index) => 
                           index === songid  ? !rate : rate
                         )})} }/>
+            Acousticness level
           </label>
           <br />
           <label>
-            The dancability level:
-            <input
+          <input
               name="The dancability"
               type="checkbox"
               value={this.state.danceability[songid]}
@@ -73,10 +72,10 @@ export class QuizPart2 extends Component {
                   this.setState({danceability: this.state.danceability.map((rate, index) => 
                       index === songid  ? !rate : rate
                     )})} }/>
+            Dancability level
           </label>
           <br />
           <label>
-            The energy level:
             <input
               name="The Energy Level"
               type="checkbox"
@@ -85,10 +84,10 @@ export class QuizPart2 extends Component {
                   this.setState({energy: this.state.energy.map((rate, index) => 
                       index === songid  ? !rate : rate
                     )})} }/>
-          </label>
+            Energy level
+            </label>
           <br />
           <label>
-            The level of instrumentalism vs vocals:
             <input
               name="the level of instrumentalism/vocals"
               type="checkbox"
@@ -97,10 +96,10 @@ export class QuizPart2 extends Component {
                   this.setState({instrumentalness: this.state.instrumentalness.map((rate, index) => 
                       index === songid  ? !rate : rate
                     )})} }/>
-          </label>
+            Level of instrumentalism vs vocals:
+            </label>
           <br />
           <label>
-            The loudness level:
             <input
               name="the level of loudness"
               type="checkbox"
@@ -109,10 +108,10 @@ export class QuizPart2 extends Component {
                   this.setState({loudness: this.state.loudness.map((rate, index) => 
                       index === songid  ? !rate : rate
                     )})} }/>
-          </label>
+            Loudness level
+            </label>
           <br />
           <label>
-            The happiness level:
             <input
               name="the happiness level"
               type="checkbox"
@@ -121,10 +120,10 @@ export class QuizPart2 extends Component {
                   this.setState({valence: this.state.valence.map((rate, index) => 
                       index === songid  ? !rate : rate
                     )})} }/>
-          </label>
+            Happiness level
+            </label>
           <br />
           <label>
-          The level of tempo:
             <input
               name="the level of tempo"
               type="checkbox"
@@ -133,6 +132,7 @@ export class QuizPart2 extends Component {
                   this.setState({tempo: this.state.tempo.map((rate, index) => 
                       index === songid  ? !rate : rate
                     )})} }/>
+          The level of tempo:
           </label>
   
         </form>
@@ -198,32 +198,33 @@ export class QuizPart2 extends Component {
     }
     const rowStyle = {
       display: 'flex',
-      flexDirection: 'row'
+      flexDirection: 'row',
+      width: 'auto'
     }
     const columnStyle = {
       display: 'flex',
       flexDirection: 'column'
     }
-      return (<><div style={{
+      return (<div style={{
+        display: 'flex',
+        flexDirection: 'column'
+      }}><div style={{
         ...rowStyle,
         justifyContent: 'center'
       }}><h2>Rank the following tracks and give us your opinions.</h2></div>
           <div style={rowStyle}>
-            <div style={columnStyle}>
               <Music url={this.state.song1play} image={this.state.pic1}>
                 {this.renderRating(1)}
               {this.checkboxes(0)}
-              </Music></div>
-            <div style={columnStyle}>
+              </Music>
               <Music url={this.state.song2play} image={this.state.pic2}>
                 {this.renderRating(2)}
               {this.checkboxes(1)}
-              </Music></div>
-            <div style={columnStyle}>
+              </Music>
               <Music url={this.state.song3play} image={this.state.pic3}>
                 {this.renderRating(3)}
               {this.checkboxes(2)}
-              </Music></div>
+              </Music>
         </div>
         <div style={{
             ...rowStyle,
@@ -233,6 +234,6 @@ export class QuizPart2 extends Component {
                 Get me Playlist Please!
             </button>
         </div>
-        </>
+        </div>
       )}
   }

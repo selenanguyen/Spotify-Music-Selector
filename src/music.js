@@ -35,7 +35,11 @@ class Music extends React.Component {
       }
       return (
         <div style={divStyle}>
-          <img src={this.props.image} />
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center'
+          }}><img src={this.props.image} /></div>
           <div style={{
             display: 'flex',
             flexDirection: 'row',

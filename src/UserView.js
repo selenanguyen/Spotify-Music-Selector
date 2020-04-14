@@ -91,7 +91,9 @@ export class UserView extends Component {
     }
     if (!this.state.userProfile) {
       return (
-        <div><h2>Loading your profile...</h2></div>
+        <div><h2>Loading your profile...</h2>
+        <h4><a href="http://localhost:3000/">Navigate back</a> if the page doesn't load.</h4>
+          </div>
       )
     }
     if (this.state.isViewingPlaylists) {

@@ -181,10 +181,11 @@ export class QuizComponent extends Component {
   <Rating initialRating={this.state.loudnessWeight} start={0} stop={10} onChange={value => {this.setState({loudnessWeight:value})}}/>
   </div>
 
-  </div></div>
+  </div>
   <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
   <div style={{ display: 'flex', justifyContent: 'center'}}><h2> I Don't Know What I want! </h2></div>{/* put call to server here and put state chance to song thing there */}
   <div style={{ display: 'flex', justifyContent: 'center'}}><button onClick={() => {this.generatePlaylist(this.organizeInputs())}}> Help Me Finish</button></div>
+  </div>
   </div>
 </>)}
 

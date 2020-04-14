@@ -48,6 +48,26 @@ export class QuizComponent extends Component {
   //     .then(state => this.setState(state));
   // }
 
+  organizeInputs = () => {
+    return ({
+      acousticness: this.state.acousticness,
+      danceability: this.state.danceability,
+      energy: this.state.energy,
+      instrumentalness: this.state.instrumentalness,
+      loudness: this.state.loudness,
+      valence: this.state.valence,
+      tempo: this.state.tempo,
+      acousticnessWeight: this.state.acousticnessWeight,
+      danceabilityWeight: this.state.danceabilityWeight,
+      energyWeight: this.state.energyWeight,
+      instrumentalnessWeight: this.state.instrumentalnessWeight,
+      loudnessWeight: this.state.loudnessWeight,
+      valenceWeight: this.state.valenceWeight,
+      tempoWeight: this.state.tempoWeight,
+      numbersongs:this.props.songCount
+    })
+  }
+
   callGenerateSong = () => {
     if(this.state.isloading){
       return
@@ -81,13 +101,12 @@ export class QuizComponent extends Component {
       },
       body: JSON.stringify(scoresAndWeights),
     })
-    .post()
     .then((response) => {
       return response.json();
     })
     .then((track) => {
       // let data = track.tracks
-      console.log(data)
+      console.log(track)
     //   this.setState({isloading:false,
     //     songData:data,
     //     hasSongsToDisplay: true,
@@ -165,7 +184,7 @@ export class QuizComponent extends Component {
   </div></div>
   <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
   <div style={{ display: 'flex', justifyContent: 'center'}}><h2> I Don't Know What I want! </h2></div>{/* put call to server here and put state chance to song thing there */}
-  <div style={{ display: 'flex', justifyContent: 'center'}}><button onClick={() => {this.callGenerateSong()}}> Help Me Finish</button></div>
+  <div style={{ display: 'flex', justifyContent: 'center'}}><button onClick={() => {this.generatePlaylist(this.organizeInputs())}}> Help Me Finish</button></div>
   </div>
 </>)}
 
@@ -175,8 +194,10 @@ export class QuizComponent extends Component {
   render() {
     return (
       <div style={{ display: "inline-block" }}>
+        {!this.props.isSure && !this.state.hasSongsToDisplay && this.callGenerateSong()}
       {this.state.isSure && this.sure()}
-      {this.state.hasSongsToDisplay && <QuizPart2 songData={this.state.songData}/>}
+      {this.state.hasSongsToDisplay && 
+            <QuizPart2 songData={this.state.songData} numbersongs={this.props.songCount} generatePlaylist={this.generatePlaylist}/>}
       </div>
     )}
 }

@@ -94,7 +94,8 @@ export class QuizComponent extends Component {
       return
     }
     this.setState({isloading:true})
-    fetch('http://localhost:3001/genPlaylist', {
+    console.log("posting...", scoresAndWeights);
+    fetch('/api/genPlaylist', {
       method: 'POST', 
       headers: {
         'Content-Type': 'application/json',
@@ -102,6 +103,7 @@ export class QuizComponent extends Component {
       body: JSON.stringify(scoresAndWeights),
     })
     .then((response) => {
+      console.log("response");
       return response.json();
     })
     .then((track) => {

@@ -711,7 +711,8 @@ app.get('/getRandomSong', function(req, res) {
 app.get('/genPlaylist', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   // generate unique id
-  const body = req.body;
+  const body = req.query;
+  console.log("BODY", req.body)
   const newPlaylistId = _.uniqueId();
   const defaultDescription = `Playlist created on ${moment().format("YYYY-MM-DD")}`;
   const { numSongs, acousticness, acousticnessWeight, danceability, 

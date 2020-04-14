@@ -174,7 +174,7 @@ import ReactDOM from 'react-dom';
       loudnessWeight: 5,
       valenceWeight: 5,
       tempoWeight: 5,
-      numbersongs:this.props.numbersongs
+      numSongs:this.props.numbersongs
       })
     }
         
@@ -194,6 +194,11 @@ import ReactDOM from 'react-dom';
     }
 
     render() {
+      let onClick = () => {
+        let obj = this.calculate();
+        console.log("CALLING PARENT", obj);
+        this.props.generatePlaylist(obj);
+      }
       const rowStyle = {
         display: 'flex',
         flexDirection: 'row'
@@ -227,7 +232,7 @@ import ReactDOM from 'react-dom';
               ...rowStyle,
               justifyContent: 'center'
           }}>
-              <button onClick={this.props.generatePlaylist(this.calculate())}>
+              <button onClick={() => this.props.generatePlaylist(this.calculate())}>
                   Get me Playlist Please!
               </button>
           </div>

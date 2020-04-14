@@ -144,9 +144,40 @@ import ReactDOM from 'react-dom';
     }
 
     calculate = () => {
+      return  ({
+        acousticness:(this.state.acousticness[0] * this.state.ratings[0] + 
+          this.state.acousticness[1] * this.state.ratings[1] + this.state.acousticness[2] * this.state.ratings[2] / 
+          (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
+        danceability:(this.state.danceability[0] * this.state.ratings[0] + 
+            this.state.danceability[1] * this.state.ratings[1] + this.state.danceability[2] * this.state.ratings[2] / 
+          (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
+        energy:(this.state.energy[0] * this.state.ratings[0] + this.state.energy[1] * this.state.ratings[1] + 
+          this.state.energy[2] * this.state.ratings[2] / 
+          (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
+        instrumentalness:(this.state.instrumentalness[0] * this.state.ratings[0] + 
+          this.state.instrumentalness[1] * this.state.ratings[1] + this.state.instrumentalness[2] * this.state.ratings[2] / 
+          (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
+        loudness:(this.state.loudness[0] * this.state.ratings[0] + 
+          this.state.loudness[1] * this.state.ratings[1] + this.state.loudness[2] * this.state.ratings[2] / 
+          (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
+        valence:(this.state.valence[0] * this.state.ratings[0] + 
+          this.state.valence[1] * this.state.ratings[1] + this.state.valence[2] * this.state.ratings[2] / 
+            (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
+        tempo:(this.state.tempo[0] * this.state.ratings[0] + 
+          this.state.tempo[1] * this.state.ratings[1] + this.state.tempo[2] * this.state.ratings[2] / 
+          (this.state.ratings[0] + this.state.ratings[1] + this.state.ratings[2])),
 
+       acousticnessWeight: 5,
+      danceabilityWeight: 5,
+      energyWeight: 5,
+      instrumentalnessWeight: 5,
+      loudnessWeight: 5,
+      valenceWeight: 5,
+      tempoWeight: 5,
+      numbersongs:this.props.numbersongs
+      })
     }
-            
+        
 
     renderRating = (songid) => {
       return <div style={{
@@ -196,7 +227,7 @@ import ReactDOM from 'react-dom';
               ...rowStyle,
               justifyContent: 'center'
           }}>
-              <button onClick={this.calculate()}>
+              <button onClick={this.props.generatePlaylist(this.calculate())}>
                   Get me Playlist Please!
               </button>
           </div>

@@ -131,53 +131,53 @@ export class QuizComponent extends Component {
   <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center'}}>
   <div style={columnStyle}>
   <div style={rowStyle}>
-  <h5> Acousticness Level </h5>
+  <h3> Acousticness Level </h3>
   <Rating initialRating={this.state.acousticness} start={0} stop={10} onChange={value => {this.setState({acousticness:value})}}/>
-  <h7> How important is acousticness to you? </h7>
+  <h5> How important is acousticness to you? </h5>
   <Rating initialRating={this.state.acousticnessWeight} start={0} stop={10} onChange={value => {this.setState({acousticnessWeight:value})}}/>
   </div>
  
   <div style={rowStyle}>
-  <h5> Dancability  </h5>
+  <h3> Dancability  </h3>
   <Rating initialRating={this.state.danceability} start={0} stop={10} onChange={value => {this.setState({danceability:value})}}/>
-  <h7> How important is dancability to you? </h7>
+  <h5> How important is dancability to you? </h5>
   <Rating initialRating={this.state.danceabilityWeight} start={0} stop={10} onChange={value => {this.setState({danceabilityWeight:value})}}/>
   </div>
 
   <div style={rowStyle}>
-  <h5> Energy Level </h5>
+  <h3> Energy Level </h3>
   <Rating initialRating={this.state.energy} start={0} stop={10} onChange={value => {this.setState({energy:value})}}/>
-  <h7> How important is the energy level to you? </h7>
+  <h5> How important is the energy level to you? </h5>
   <Rating initialRating={this.state.energyWeight} start={0} stop={10} onChange={value => {this.setState({energyWeight:value})}}/>
   </div>
 
   <div style={rowStyle}>
-  <h5> Instrumentalness (less words)</h5>
+  <h3> Instrumentalness (less words)</h3>
   <Rating initialRating={this.state.instrumentalness} start={0} stop={10} onChange={value => {this.setState({instrumentalness:value})}}/>
-  <h7> How important is the instrumentalness to you? </h7>
+  <h5> How important is the instrumentalness to you? </h5>
   <Rating initialRating={this.state.instrumentalnessWeight} start={0} stop={10} onChange={value => {this.setState({instrumentalnessWeight:value})}}/>
 </div></div>
 
 
   <div style={columnStyle}>
   <div style={rowStyle}>
-  <h5> Happiness Level </h5>
+  <h3> Happiness Level </h3>
   <Rating initialRating={this.state.valence} start={0} stop={10} onChange={value => {this.setState({valence:value})}}/>
-  <h7> How important is happiness level to you? </h7>
+  <h5> How important is happiness level to you? </h5>
   <Rating initialRating={this.state.valenceWeight} start={0} stop={10} onChange={value => {this.setState({valenceWeight:value})}}/>
   </div>
 
   <div style={rowStyle}>
-  <h5> Tempo (Low to High)</h5>
+  <h3> Tempo (Low to High)</h3>
   <Rating initialRating={this.state.tempo} start={0} stop={10} onChange={value => {this.setState({tempo:value})}}/>
-  <h7> How important is the tempo to you? </h7>
+  <h5> How important is the tempo to you? </h5>
   <Rating initialRating={this.state.tempoWeight} start={0} stop={10} onChange={value => {this.setState({tempoWeight:value})}}/>
 </div>
 
   <div style={rowStyle}>
-  <h5> Loudness </h5>
+  <h3> Loudness </h3>
   <Rating initialRating={this.state.loudness} start={0} stop={10} onChange={value => {this.setState({loudness:value})}}/>
-  <h7> How important is the loudness to you? </h7>
+  <h5> How important is the loudness to you? </h5>
   <Rating initialRating={this.state.loudnessWeight} start={0} stop={10} onChange={value => {this.setState({loudnessWeight:value})}}/>
   </div>
 

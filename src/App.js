@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { UserView } from "./UserView.js";
 import './App.css';
-import { QuizComponent } from "./QuizComponent.js";
+import { QuizView } from "./QuizView.js";
 
 class DatabaseLoginView extends Component {
   constructor(props) {
@@ -78,7 +78,8 @@ class AnonymousView extends Component {
   }
 
   renderQuiz() {
-    return <QuizComponent />;
+    console.log('rendering from anon')
+    return <QuizView />;
   }
 
   render() {

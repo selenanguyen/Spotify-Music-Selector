@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');//2/promise');
 const SpotifyWebApi = require('spotify-web-api-node');
+const moment = require("moment");
+const _ = require("lodash");
 
 const pino = require('express-pino-logger')();
 
@@ -707,10 +709,44 @@ app.get('/getRandomSong', function(req, res) {
 
 app.get('/genPlaylist', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
-
-  //create playlist id
-  //call procedure that creates playlist (with this id, and user)
+  // generate unique id
+  const body = req.body;
+  const newPlaylistId = _.uniqueId();
+  const defaultDescription = `Playlist created on ${moment().format("YYYY-MM-DD")}`;
+  const { numSongs, acousticness, acousticnessWeight, danceability, 
+    danceabilityWeight, energy, energyWeight, instrumentalness,
+    instrumentalnessWeight, loudness, loudnessWeight, valence, 
+    valenceWeight, tempo, tempoWeight } = body;
+  let sql = `CALL add_playlist("${userSpotifyId}","${newPlaylistId}","My New Playlist","${defaultDescription}")`;
+  connection.promise().query(sql).then(r => {
+    sql = `CALL generate_playlist("${userSpotifyId}","${newPlaylistId}",
+      "${numSongs}",
+      "${acousticness}","${acousticnessWeight}",
+      "${danceability}","${danceabilityWeight}","${energy}","${energyWeight}",
+      "${instrumentalness}","${instrumentalnessWeight}",
+      "${loudness}","${loudnessWeight}","${valence}","${valenceWeight}",
+      "${tempo}","${tempoWeight}")`;
+    connection.promise().query(sql).then(r => {
+      getPlaylistTracks(newPlaylistId).then(([ rows, fields ]) => {
+        res.send(JSON.stringify({
+          playlist_id: newPlaylistId,
+          tracks: rows[0]
+        }))
+      })
+    })
+  }).catch(e => console.log("ERROR IN SERVER", e));
   //uses shit ton of inuts to call generate playlist
+  // connection.promise().query(sql).then(r => {
+  //   sql = `INSERT INTO playlists(playlist_id,creator,playlist_name,playlist_description) VALUES("${newPlaylistId}","${userSpotifyId}","${defaultDescription}")`;
+  //   connection.promise().query(sql).then(r => {
+  //     getPlaylistTracks(newPlaylistId).then(([ rows, fields]) => {
+  //       res.send(JSON.stringify({
+  //         playlist_id: newPlaylistId,
+  //           racks: rows[0]
+  //       }));
+  //     })
+  //   })
+  // })
   //call get playlist tracks thing, return that
 
   // acousticness: 0,

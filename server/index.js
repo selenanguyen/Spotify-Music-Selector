@@ -20,9 +20,6 @@ app.use(pino);
 app.use(cookieParser());
 app.use(cors());
 
-
-// var express = require('express'); // Express web server framework
-
 var client_id = 'eea02be1f6f34fed9b59426d482c6aee'; // Your client id
 var client_secret = '67c0786a03d14feba40f746ad8d846c3'; // Your secret
 var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
@@ -32,11 +29,6 @@ var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
  * ******************* SQL CONNECTION ********************
  * *******************************************************
  */
-// var serverName = "localhost";
-// var portNumber = 3306;
-// var userName = 'root', password = '';
-// var db = "spotifyApp";
-// var userSpotifyId;
 var connection;
 var userSpotifyId;
 var access_token;
@@ -59,16 +51,11 @@ const invalidPasswordErrNo = 1045;
 /**
  * Gets all songs belonging to the current user
  */
-
  const getRandomSongs = async () => {
   let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
   WHERE user_songs.user_id = '${userSpotifyId}' ORDER BY RAND() LIMIT 3`;
   return connection.promise().query(sql).then(([rows, fields]) => {
-   // res.send(JSON.stringify({
-   //   rows: rows,
-   //   fields: fields
-   // }))
-   return rows
+    return rows
  })
  .then(rows => {
    spotifyApi.setAccessToken(access_token);
@@ -100,11 +87,18 @@ const invalidPasswordErrNo = 1045;
 })
 }
 
+/**
+ * Calls procedure get_all_songs in database
+ */
 const getUserSongsFromDatabase = () => {
   let sql = `CALL get_all_songs(${userSpotifyId})`;
   return connection.promise().query(sql);
 }
 
+/**
+ * Removes the playlist with the given ID from the database
+ * @param {*} id 
+ */
 const removePlaylist = (id) => {
   let sql = `DELETE FROM playlists WHERE playlist_id = '${id}';`
   return connection.promise().query(sql).then((response) => true)
@@ -113,18 +107,22 @@ const removePlaylist = (id) => {
   })
 }
 
+/**
+ * Calls get_playlists procedure for the current user
+ */
 const getPlaylists = () => {
   let sql = `CALL get_playlists(${userSpotifyId})`
   return connection.promise().query(sql).then((response) =>{
-    console.log("GET PLAYLISTS: ", response)
     return response;
   }).catch((e) => {
     console.log("ERROR:", e);
   });
 }
 
+/**
+ * Receives the playlist tracks for the given playlist id
+ */
 const getPlaylistTracks = (playlistId) => {
-  console.log("GETTING PLAYLISTS FOR PLAYLIST " + playlistId);
   let sql = `CALL get_playlist_songs('${playlistId}')`
   return connection.promise().query(sql).then((response) =>{
     return response;
@@ -133,8 +131,13 @@ const getPlaylistTracks = (playlistId) => {
   });
 }
 
+/**
+ * Updates the given playlist field with the given value
+ * @param {*} id 
+ * @param {*} field 
+ * @param {*} value 
+ */
 const updatePlaylistField = async (id, field, value) => {
-  console.log("updating " + id + " playlist " + field + " to " + value)
   let sql = `UPDATE playlists
     SET ${field} = '${value}' WHERE playlist_id = '${id}';`
   return connection.promise().query(sql).then((resp) => {
@@ -180,29 +183,25 @@ const addToDatabase = (song, artist, album, userId) => {
   let addUserSongSql = `INSERT INTO user_songs(song_id,user_id) VALUES("${id}","${userId}")`;
   connection.query(addArtistSql, function (error, results, fields) {
     if (error && error.errno != duplicateEntryErrNo && error.errno != entryNameTooLongErrNo && error.errno != quotationErrNo) {
-      // console.log("ERROR ADDING ARTIST ", artist.name);
-      console.log(error);
+          // Do nothing. We can ignore these errors with our current implementation
+          //console.log(error);
     }
     else {
       connection.query(addAlbumSql, function (error, results, fields) {
         if (error && error.errno != duplicateEntryErrNo && error.errno != entryNameTooLongErrNo && error.errno != quotationErrNo) {
-          console.log("ERROR ADDING ALBUM", album.name);
-          // console.log(error);
+          // Do nothing. We can ignore these errors with our current implementation
         }
         else {
           connection.query(addSongSql, function (error, results, fields) {
             if (error && error.errno != duplicateEntryErrNo && error.errno != entryNameTooLongErrNo 
               && error.errno != quotationErrNo && id != undefined) {
-              console.log("ERROR ADDING SONG", song.name);
-              // console.log(error);
-            }
+          // Do nothing. We can ignore these errors with our current implementation
+        }
             else {
               connection.query(addUserSongSql, function (error, results, fields) {
                 if (error && error.errno != duplicateEntryErrNo && id != undefined) {
-                  console.log("ERROR ADDING USER-SONG", song.id, userId);
-                  // console.log(error);
+          // Do nothing. We can ignore these errors with our current implementation
                 }
-                //connection.query()
               })
             }
           });
@@ -231,22 +230,14 @@ const addTracks = (offset, userId, getTracksFn) => {
     offset: offset
 // After receiving the tracks...
 }).then((tracks) => {
-    //console.log(tracks);
     var trackIds = [];
     // For each track...
     tracks.body.items && tracks.body.items.forEach((track) => {
-        //console.log("TRACK: " + track);
-        // Cache this track
-        //this[track.track.id] = true;
-        // TODO: add artist and album to database if not exist
         // Save the track id
         trackIds.push(track.track.id);
     });
-    //console.log("TRACK IDS: " + trackIds);
     // Get the audio features and add the new track item to the array of tracks to add to the database
     spotifyApi.getAudioFeaturesForTracks(trackIds).then((audioFeatures) => {
-        //console.log("AUDIO FEATURES: \n" + audioFeatures);
-        //console.log("songs:");
         audioFeatures.body.audio_features.forEach((feature, index) => {
             // add to song table...
             let song = {
@@ -284,22 +275,16 @@ const addSavedTracks = (offset, userId) => {
         offset: offset
     // After receiving the tracks...
     }).then((tracks) => {
-        //console.log(tracks);
         var trackIds = [];
         // For each track...
         tracks.body.items && tracks.body.items.forEach((track) => {
-            //console.log("TRACK: " + track);
             // Cache this track
             this[track.track.id] = true;
-            // TODO: add artist and album to database if not exist
             // Save the track id
             trackIds.push(track.track.id);
         });
-        //console.log("TRACK IDS: " + trackIds);
         // Get the audio features and add the new track item to the array of tracks to add to the database
         spotifyApi.getAudioFeaturesForTracks(trackIds).then((audioFeatures) => {
-            //console.log("AUDIO FEATURES: \n" + audioFeatures);
-            //console.log("songs:");
             audioFeatures.body.audio_features.forEach((feature, index) => {
                 // add to song table...
                 let song = {
@@ -318,13 +303,8 @@ const addSavedTracks = (offset, userId) => {
                 if (song.id != "undefined" && userId && artist.id && album.id) {
                   addToDatabase(song, artist, album, userId);
                 }
-                //console.log(song, artist, album);
-                //console.log("==============UPDATED SONGS IN DB==============");
-                //printSongs();
-                //console.log(song);
             });
             if (tracks.body.next) {
-                //console.log("next: " + tracks.body.next + "\nRequesting offset " + offset + 50 + "next");
                 addSavedTracks(offset + 50, userId);
             }
         }).catch((e) => console.log(e))
@@ -359,7 +339,6 @@ const addPlaylistHelper = (offset, userId) => {
    */
 const getUserId = async () => {
   return spotifyApi.getMe().then(({body}) => {
-    //console.log("USER:", body, body.id)
     userSpotifyId = body.id;
     addUser(body.id, body.display_name);
     return body.id;
@@ -371,7 +350,6 @@ const getUserId = async () => {
  */
 const getUser = async () => {
   return spotifyApi.getMe().then(({body}) => {
-    console.log(body);
     return body;
   });
 }
@@ -393,12 +371,10 @@ const isUserInDatabase = async () => {
     return connection.promise().query(`SELECT user_id FROM users`).then(([rows,fields]) => {
       const userIds = rows.map((row) => row.user_id);
       if (userIds.includes(id)) {
-        console.log("User " + id + " in database")
         userSpotifyId = id;
         return true;
       }
       else {
-        console.log("User not in database")
         addUser(id, display_name);
         userSpotifyId = id;
         return false;
@@ -425,8 +401,11 @@ const addUserLibraryToDatabase = () => {
 
 /**
  * ************************************************************************************
- * API REQUESTS TO OUR SERVER
+ * ************************** API REQUESTS TO OUR SERVER ******************************
  * ************************************************************************************
+ */
+/**
+ * Gets 3 random songs from the database
  */
 app.get('/api/getRandomSongsAnon', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
@@ -441,6 +420,9 @@ app.get('/api/getRandomSongsAnon', (req, res) => {
   })
 
 })
+/**
+ * Gets 3 random songs from the database for the current user
+ */
 app.get('/api/getRandomSongsUser', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
@@ -454,13 +436,20 @@ app.get('/api/getRandomSongsUser', (req, res) => {
   .catch(e => {
     console.log(e);
   });
-})
+});
+
+/**
+ * Used to test api
+ */
 app.get('/api/greeting', (req, res) => {
   const name = req.query.name || 'World';
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify({ greeting: `Hello ${name}!` }));
 });
 
+/**
+ * Logs into the database using the given credentials
+ */
 app.get('/api/databaseLogin', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   let username = req.query.usr;
@@ -475,8 +464,6 @@ app.get('/api/databaseLogin', (req, res) => {
     database : db,
     port     : portNumber
   });
-  console.log("Created connection")
-  // res.send(JSON.stringify({ success: true }));
   connection.promise().connect().then(r => {
     res.send(JSON.stringify({success: true}))
   }).catch(e => {
@@ -498,21 +485,29 @@ app.get('/api/databaseLogin', (req, res) => {
   });
 });
 
+/**
+ * Removes the playlist from the database with the given id
+ */
 app.get('/api/removePlaylist', (req, res) => {
   const id = req.query.id;
   res.setHeader('Content-Type', 'application/json');
   if (!id) {
-    console.log("No id given: ", id);
     throw new Error("Invalid argument for remove playlist:", id);
   }
   removePlaylist(id).then((resp) => res.send(JSON.stringify(resp)));
 })
 
+/**
+ * Gets the user's songs from the database
+ */
 app.get('/api/getSongs', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify({ songs: getUserSongsFromDatabase() }))
 })
 
+/**
+ * Gets the user's profile
+ */
 app.get('/api/getUser', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   getUser().then((profile) => {
@@ -520,26 +515,33 @@ app.get('/api/getUser', (req, res) => {
   })
 })
 
+/**
+ * Gets the user's playlists
+ */
 app.get('/api/getPlaylists', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   getPlaylists().then(([ rows, fields ]) => {
-    console.log("ROWS:", rows, "FIELDS:", fields);
     res.send(JSON.stringify({
       rows: rows[0], fields: fields[0]
     }));
   })
 })
 
+/**
+ * Gets the tracks in the given playlist
+ */
 app.get('/api/getPlaylistTracks', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   getPlaylistTracks(req.query.id).then(([ rows, fields ]) => {
-    //console.log("ROWS:", rows, "FIELDS:", fields);
     res.send(JSON.stringify({
       rows: rows[0], fields: fields[0]
     }));
   })
 })
 
+/**
+ * Updates the given playlist field with the given id
+ */
 app.get('/api/updatePlaylistField', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   if (!req.query.id || (!req.query.desc && !req.query.title)) {
@@ -552,9 +554,57 @@ app.get('/api/updatePlaylistField', (req, res) => {
   else {
     res.send(JSON.stringify(updatePlaylistField(req.query.id, "playlist_name", req.query.title)));
   }
-})
+});
 
+/**
+ * Gets a random song
+ */
+app.get('/getRandomSong', function(req, res) {
+  let track = 0
+  res.setHeader('Content-Type', 'application/json');
+  getRandomSongs().then(tracks => res.send(JSON.stringify({ tracks })));
+});
 
+/**
+ * Generates the user's playlist based on the given quiz answers
+ * Calls generate_playlist in database
+ */
+app.get('/genPlaylist', function(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  // generate unique id
+  const body = req.query;
+  const newPlaylistId = new Date().getUTCMilliseconds().toString();
+  const defaultDescription = `Playlist created on ${moment().format("YYYY-MM-DD")}`;
+  const { numSongs, acousticness, acousticnessWeight, danceability, 
+    danceabilityWeight, energy, energyWeight, instrumentalness,
+    instrumentalnessWeight, loudness, loudnessWeight, valence, 
+    valenceWeight, tempo, tempoWeight } = body;
+  let sql = `CALL add_playlist("${userSpotifyId}","${newPlaylistId}","My New Playlist","${defaultDescription}")`;
+  connection.promise().query(sql).then(r => {
+    sql = `CALL generate_playlist("${userSpotifyId}","${newPlaylistId}",
+      "${numSongs.trim()}",
+      "${acousticness.trim()}","${acousticnessWeight.trim()}",
+      "${danceability.trim()}","${danceabilityWeight.trim()}","${energy.trim()}","${energyWeight.trim()}",
+      "${instrumentalness.trim()}","${instrumentalnessWeight.trim()}",
+      "${loudness.trim()}","${loudnessWeight.trim()}","${valence.trim()}","${valenceWeight.trim()}",
+      "${tempo.trim()}","${tempoWeight.trim()}")`;
+    connection.promise().query(sql).then(r => {
+      getPlaylistTracks(newPlaylistId).then(([ rows, fields ]) => {
+        res.send(JSON.stringify({
+          playlist_id: newPlaylistId,
+          tracks: rows[0]
+        }))
+      })
+    }).catch(e => console.log("ERROR IN GENERATE_PLAYLIST", e))
+  }).catch(e => console.log("ERROR IN SERVER", e));
+  
+});
+
+/**
+ ******************************************************************************
+ ********************** CONNECTING TO SPOTIFY'S WEB API ***********************
+ ******************************************************************************
+ */
 
 /**
  * Generates a random string containing numbers and letters
@@ -573,23 +623,12 @@ var generateRandomString = function(length) {
 
 var stateKey = 'spotify_auth_state';
 
-// already have
-// var app = express();
-
-// app.use(express.static(__dirname + '/public'))
-//    .use(cors())
-//    .use(cookieParser());
-
-app.get('/here', function(req, res) {
-    //console.log('7777777')
-});
-
 app.get('/login', function(req, res) {
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  // your application requests authorization
+  // requests authorization
   var scope = 'user-read-private user-read-email user-library-read playlist-read-collaborative playlist-read-private';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
@@ -602,13 +641,7 @@ app.get('/login', function(req, res) {
 });
 
 app.get('/callback', function(req, res) {
-
-
-        //call db, get users
-        //does user exist
-
-    
-  // your application requests refresh and access tokens
+  // request refresh and access tokens
   // after checking the state parameter
 
   var code = req.query.code || null;
@@ -647,43 +680,14 @@ app.get('/callback', function(req, res) {
           }
         });
         // TODO: handle error (statusCode 429, too many requests)
-
-        //addUserPlaylistsToDatabase();
-        // res.redirect("http://localhost:3000/#database=authorized&token=true");
-        //setSpotifyData();
-
-    //     var options = {
-    //       url: 'https://api.spotify.com/v1/me',
-    //       headers: { 'Authorization': 'Bearer ' + access_token },
-    //       json: true
-    //     };
-
-    //     // use the access token to access the Spotify Web API
-    //     request.get(options, function(error, response, body) {
-    //       console.log(body);
-    //     });
-    
-        // we can also pass the token to the browser to make requests from there
         res.redirect('http://localhost:3000/#token=true');
       } 
-
-      
-    //   else {
-    //       //Hihg key catch the error
-    // //     res.redirect('/#' +
-    // //       querystring.stringify({
-    // //         error: 'invalid_token'
-    // //       }
-    // //       ));
-    //   }
     });
   }
 });
 
 
 refresh = () => {
-
-  console.log("77777")
   // requesting access token from refresh token
   var authOptions = {
     url: 'https://accounts.spotify.com/api/token',
@@ -701,108 +705,6 @@ refresh = () => {
     } else console.log(response.statusCode)
   });
 };
-
-app.get('/getRandomSong', function(req, res) {
-  let track = 0
-  res.setHeader('Content-Type', 'application/json');
-  getRandomSongs().then(tracks => res.send(JSON.stringify({ tracks })));
-});
-
-app.get('/genPlaylist', function(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  // generate unique id
-  const body = req.query;
-  const newPlaylistId = new Date().getUTCMilliseconds().toString();
-  const defaultDescription = `Playlist created on ${moment().format("YYYY-MM-DD")}`;
-  const { numSongs, acousticness, acousticnessWeight, danceability, 
-    danceabilityWeight, energy, energyWeight, instrumentalness,
-    instrumentalnessWeight, loudness, loudnessWeight, valence, 
-    valenceWeight, tempo, tempoWeight } = body;
-  let sql = `CALL add_playlist("${userSpotifyId}","${newPlaylistId}","My New Playlist","${defaultDescription}")`;
-  connection.promise().query(sql).then(r => {
-    console.log("RESPONSE FROM SQL");
-    sql = `CALL generate_playlist("${userSpotifyId}","${newPlaylistId}",
-      "${numSongs.trim()}",
-      "${acousticness.trim()}","${acousticnessWeight.trim()}",
-      "${danceability.trim()}","${danceabilityWeight.trim()}","${energy.trim()}","${energyWeight.trim()}",
-      "${instrumentalness.trim()}","${instrumentalnessWeight.trim()}",
-      "${loudness.trim()}","${loudnessWeight.trim()}","${valence.trim()}","${valenceWeight.trim()}",
-      "${tempo.trim()}","${tempoWeight.trim()}")`;
-    connection.promise().query(sql).then(r => {
-      console.log("response from generate_playlist");
-      getPlaylistTracks(newPlaylistId).then(([ rows, fields ]) => {
-        console.log("77777777777777777777")
-        res.send(JSON.stringify({
-          playlist_id: newPlaylistId,
-          tracks: rows[0]
-        }))
-      })
-    }).catch(e => console.log("ERROR IN GENERATE_PLAYLIST", e))
-  }).catch(e => console.log("ERROR IN SERVER", e));
-  //uses shit ton of inuts to call generate playlist
-  // connection.promise().query(sql).then(r => {
-  //   sql = `INSERT INTO playlists(playlist_id,creator,playlist_name,playlist_description) VALUES("${newPlaylistId}","${userSpotifyId}","${defaultDescription}")`;
-  //   connection.promise().query(sql).then(r => {
-  //     getPlaylistTracks(newPlaylistId).then(([ rows, fields]) => {
-  //       res.send(JSON.stringify({
-  //         playlist_id: newPlaylistId,
-  //           racks: rows[0]
-  //       }));
-  //     })
-  //   })
-  // })
-  //call get playlist tracks thing, return that
-
-  // acousticness: 0,
-  // danceability: 0,
-  // energy: 0,
-  // instrumentalness: 0,
-  // loudness: 0,
-  // valence: 0,
-  // tempo: 0,
-  // acousticnessWeight: 0,
-  // danceabilityWeight: 0,
-  // energyWeight: 0,
-  // instrumentalnessWeight: 0,
-  // loudnessWeight: 0,
-  // valenceWeight: 0,
-  // tempoWeight: 0,
-  // numbersongs:0
-  
-});
-
-
-
-  // refresh()
-  // let sql = `SELECT * from user_songs JOIN songs ON user_songs.song_id = songs.song_id
-  //  WHERE user_songs.user_id = ${userSpotifyId} ORDER BY RAND() LIMIT 3`;
-  // connection.promise().query(sql).then(([rows, fields]) => {
-  //   // res.send(JSON.stringify({
-  //   //   rows: rows,
-  //   //   fields: fields
-  //   // }))
-  //   return rows
-  // })
-  // .then(rows => {
-  //   spotifyApi.setAccessToken(access_token);
-  //   let findTrack = (id, spotifyTracks) => {
-  //     return spotifyTracks.find((spotifyTrack) => id === spotifyTrack.id);
-  //   }
-  //   let ids = rows.map(track => track.song_id);
-  //   spotifyApi.getTracks(ids).then(tracks => {
-  //     track = tracks.body.tracks;
-  //     let newTracks = rows.map((dbTrack) => {
-  //       return {
-  //         ...dbTrack,
-  //         ...findTrack(dbTrack.song_id, tracks.body.tracks)
-  //       }
-  //     });
-  //     res.send(JSON.stringify({ tracks: newTracks }));
-  // }).catch(e => console.log(e))
-  // })
-  // .catch(e => {
-  //   console.log(e);
-  // });
 
 app.listen(3001, () =>
   console.log('Express server is running on localhost:3001')

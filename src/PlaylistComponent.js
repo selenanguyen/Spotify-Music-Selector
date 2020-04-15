@@ -61,7 +61,7 @@ export class PlaylistComponent extends Component {
   }
 
   removePlaylist = (id) => {
-    fetch(`api/removePlaylist?id=${encodeURIComponent(this.playlist.playlist_id)}`)
+    fetch(`api/removePlaylist?id=${encodeURIComponent(this.props.playlist.playlist_id)}`)
     .then(r => this.props.onRemovePlaylist(id));
   }
 
@@ -175,7 +175,7 @@ export class PlaylistComponent extends Component {
       )}
       </tbody>
     </table>
-    {this.props.onRemovePlaylist && <button style={buttonStyle} onClick={() => this.removePlaylist(id)}>Remove playlist</button>}
+    {this.props.onRemovePlaylist && <button style={buttonStyle} onClick={() => this.removePlaylist(this.props.playlist.playlist_id)}>Remove playlist</button>}
   </div>
   }
 }

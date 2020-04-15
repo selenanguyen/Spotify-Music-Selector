@@ -1,9 +1,10 @@
+-- Updated procedures for Spotify Music Selector
 use spotifyApp;
 DROP PROCEDURE IF EXISTS get_all_songs;
 DROP PROCEDURE IF EXISTS get_playlists;
 DROP PROCEDURE IF EXISTS get_playlist_songs;
 DROP PROCEDURE IF EXISTS generate_playlist;
-DROP PROCEDURE IF EXISTS createPlaylist;
+DROP PROCEDURE IF EXISTS add_playlist;
 
 DELIMITER //
 CREATE PROCEDURE get_all_songs(
@@ -88,6 +89,7 @@ BEGIN
     limit numSongs) as Songs;
 END //
 
+
 -- CREATE PROCEDURE get_saved_songs(
 -- 	user_id VARCHAR(50)
 -- )
@@ -103,4 +105,3 @@ END //
 -- TODO: get saved songs and get playlist songs from user id
 
 select * from playlists;
-select * from songs;

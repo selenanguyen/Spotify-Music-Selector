@@ -17,7 +17,6 @@ export class UserView extends Component {
       fetch(`/api/getUser`)
       .then(response => response.json())
       .then(jsonresponse => {
-        console.log("RECEIVED IN CLIENT:", jsonresponse);
         this.setState({
           ...this.state,
           userProfile: jsonresponse
@@ -100,7 +99,6 @@ export class UserView extends Component {
       return <ViewPlaylists navToProfile={this.navBackToProfile} />
     }
     if (this.state.isGettingMusic) {
-      console.log("rendering from user view");
       return <QuizView navToPlaylists={this.navToPlaylists} navToProfile={this.navBackToProfile} />
     }
     return (

@@ -78,13 +78,10 @@ class AnonymousView extends Component {
   }
 
   renderQuiz() {
-    console.log('rendering from anon')
     return <QuizView />;
   }
 
   render() {
-    // return <div style={{ display: "inline-block" }}><h1>this is an anonymous user</h1>
-    //   {this.renderQuiz()}</div>
     return this.renderQuiz()
   }
 }
@@ -156,9 +153,6 @@ class App extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onDatabaseLoginSuccess = this.onDatabaseLoginSuccess.bind(this);
-    // if (this.getHashParams().token) {
-    //   this.getSongs();
-    // }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -201,12 +195,6 @@ class App extends Component {
       isLoggedIn: true,
       isAnonymous: isAnonymous
     })
-  }
-
-  getSongs() {
-    // fetch(`/api/getSongs`)
-    // .then(response => response.json())
-    // .then(jsonresponse => console.log("RECEIVED IN CLIENT:", jsonresponse));
   }
 
   render() {

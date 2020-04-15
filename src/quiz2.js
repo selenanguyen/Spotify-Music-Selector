@@ -8,7 +8,7 @@ export class QuizPart2 extends Component {
   constructor(props) {
     super(props);
     this.state = {  
-      
+      err: null,
       isloading:false,
         song1id: this.props.songData[0].id,
         song1play: this.props.songData[0].preview_url,
@@ -140,6 +140,15 @@ export class QuizPart2 extends Component {
       )
   }
 
+  isInputValid = () => {
+    for (let i = 0; i < 3; i++) {
+      if (this.state.ratings[i] === 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   calculate = () => {
     return  ({
       acousticness:(this.state.acousticness[0] * this.state.ratings[0] + 
@@ -191,10 +200,17 @@ export class QuizPart2 extends Component {
   }
 
   render() {
-    let onClick = () => {
-      let obj = this.calculate();
-      console.log("CALLING PARENT", obj);
-      this.props.generatePlaylist(obj);
+    const buttonStyle = {
+      border: 'none',
+      margin: '15px',
+      color: 'black',
+      borderRadius: '5px',
+      backgroundColor: '#e7e7e7',
+      padding: '15px 32px',
+      textAlign: 'center',
+      textDecoration: 'none',
+      display: 'inline-block',
+      fontSize: '16px'
     }
     const rowStyle = {
       display: 'flex',
@@ -226,12 +242,25 @@ export class QuizPart2 extends Component {
               {this.checkboxes(2)}
               </Music>
         </div>
+        {this.state.err && <div style={{ color: "red", textAlign: "center" }}>{this.state.err}</div>}
         <div style={{
             ...rowStyle,
+            marginTop: '10px',
             justifyContent: 'center'
         }}>
-            <button onClick={() => this.props.generatePlaylist(this.calculate())}>
-                Get me Playlist Please!
+            <button 
+              style={buttonStyle}
+              onClick={() => {
+              if (this.isInputValid()) {
+                this.props.generatePlaylist(this.calculate());
+              }
+              else {
+                this.setState({
+                  err: "Please rate all three tracks before submitting."
+                })
+              }
+              }}>
+                Generate playlist
             </button>
         </div>
         </div>

@@ -1,4 +1,4 @@
--- updated database
+-- Updated database for Spotify Music Selector
 DROP DATABASE IF EXISTS spotifyApp;
 CREATE DATABASE spotifyApp;
 
@@ -12,7 +12,7 @@ CREATE TABLE artists
 CREATE TABLE albums
 (
   album_id                  		VARCHAR(50)				PRIMARY KEY		NOT NULL,
-  album_name                     	VARCHAR(100)		NOT NULL,
+  album_name                     	VARCHAR(100)			NOT NULL,
   artist							VARCHAR(50)				NOT NULL,
   CONSTRAINT albums_fk_artists
 	FOREIGN KEY (artist) REFERENCES artists (artist_id)
@@ -43,7 +43,7 @@ CREATE TABLE songs
 CREATE TABLE users
 (
   user_id                  		VARCHAR(50)             PRIMARY KEY,
-  user_name               		VARCHAR(50)		NOT NULL
+  user_name               		VARCHAR(50)				NOT NULL
 );
 
 CREATE TABLE playlists
@@ -52,9 +52,9 @@ CREATE TABLE playlists
   creator                     	VARCHAR(50)				NOT NULL,
   playlist_name               	VARCHAR(50)				NOT NULL,
   date_created					DATE					NOT NULL,
-  playlist_description			VARCHAR(100),
+  playlist_description			VARCHAR(100)		 	DEFAULT "Playlist created with Spotify Music Selector",
   PRIMARY KEY(playlist_id, creator),
-  CONSTRAINT playlists_fk_artists
+  CONSTRAINT playlists_fk_users
     FOREIGN KEY (creator) REFERENCES users (user_id)
     ON DELETE CASCADE
 );
@@ -66,9 +66,11 @@ CREATE TABLE playlist_songs
     PRIMARY KEY(song_id, playlist_id),
     CONSTRAINT playlist_songs_fk_songs
 		FOREIGN KEY (song_id) REFERENCES songs (song_id)
+        ON UPDATE RESTRICT
         ON DELETE CASCADE,
 	CONSTRAINT playlist_songs_fk_playlists
 		FOREIGN KEY (playlist_id) REFERENCES playlists (playlist_id)
+        ON UPDATE RESTRICT
         ON DELETE CASCADE
 ); 
 
@@ -79,17 +81,23 @@ CREATE TABLE user_songs
     PRIMARY KEY(song_id, user_id),
     CONSTRAINT user_songs_song_fk_songs
 		FOREIGN KEY	(song_id) REFERENCES songs (song_id)
+        ON UPDATE RESTRICT
         ON DELETE CASCADE,
 	CONSTRAINT user_songs_user_fk_users
 		FOREIGN KEY (user_id) REFERENCES users (user_id)
+        ON UPDATE RESTRICT
         ON DELETE CASCADE
 );
+
+select * from playlists;
+select * from playlist_songs;
+
 select * from songs;
 select * from user_songs;
 select * from artists;
 select * from albums;
 
-select * from users;
+select * from user_songs;
 -- INSERT INTO users(user_id,user_name) 
 -- VALUES("1252205107","selena nguyen");
 -- INSERT INTO playlists(playlist_id,creator,playlist_name,date_created,playlist_description) 
@@ -106,5 +114,5 @@ select * from users;
 -- VALUES("07oiSjg6TiehyOS3pRJo0l","playlist1");
 -- INSERT INTO playlist_songs(song_id,playlist_id)
 -- VALUES("08xsXR637CEqbxJmpFcuSA","playlist2");
--- select * from playlist_songs;
--- select * from playlists;
+
+

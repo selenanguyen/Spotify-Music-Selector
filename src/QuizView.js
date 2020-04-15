@@ -111,7 +111,6 @@ export class QuizView extends Component {
       }
       return <QuizComponent isSure={this.state.quizVersion === "sure"} songCount={(this.state.selection === "playlist" && this.state.songCount) || 1} />
     };
-    console.log(this.props.navToProfile);
     const newButtonStyle = {
       ...buttonStyle,
       color: 'white',

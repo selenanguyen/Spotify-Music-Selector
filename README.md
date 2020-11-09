@@ -1,3 +1,7 @@
+## Description
+
+This is a full stack web application that either selects a track or curates a playlist for a user based on answers to quiz questions on their Spotify library.
+
 ## Run the application
 
 In the project directory, run:
